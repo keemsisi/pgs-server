@@ -1,0 +1,22 @@
+version: "2"
+services:
+    pgs-api-server:
+        build : .
+        ports :
+        - "8081:8081"
+        volumes : 
+          - .:/code
+        links:
+            - mongo
+        restart: always
+    mongo:
+        # replace username/repo:tag with your name and image details
+        container_name: mongo
+        image: mongo
+        ports:
+          - "27017:27017"
+        restart: always
+        volumes:
+            - ./data:/data/db
+
+        
