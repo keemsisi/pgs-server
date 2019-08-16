@@ -1,0 +1,4 @@
+"The following id is the main server that the mongodb dev is running on";
+{
+"mongodb_container_id" : "2b33f5097ca07b6f144442cf7dd1b7537af76d6667d91551ad6e8bf87b5ab22d"
+} 
