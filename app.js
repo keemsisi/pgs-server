@@ -16,8 +16,8 @@ var APPLICATION = express();
 var bodyParser = require('body-parser');
 
 // view engine setup
-// APPLICATION.set('views', path.join(__dirname, 'views'));
-// APPLICATION.set('view engine', 'ejs');
+APPLICATION.set('views', path.join(__dirname, 'views'));
+APPLICATION.set('view engine', 'ejs');
 APPLICATION.use(logger('dev'));
 APPLICATION.use(express.json());
 APPLICATION.use(bodyParser.urlencoded({ extended: true , limit : 1000000000000}));

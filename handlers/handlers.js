@@ -33,7 +33,7 @@ var fileCollections=  [
 // mongodb atalas connection 
 var USERNAME = process.env.USERNAME;
 var PASSWORD = process.env.PASSWORD
-var url = `mongodb+srv://${USERNAME}:${PASSWORD}@cluster0-uwi4x.mongodb.net/test?retryWrites=true&w=majority`;
+var url = `mongodb+srv://keemsisi:GIFTED11@cluster0-uwi4x.mongodb.net/test?retryWrites=true&w=majority`;
 
 var events = new EventEmitter() ;
 var mongodbClient = null ; // initital client value
