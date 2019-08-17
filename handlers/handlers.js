@@ -31,7 +31,9 @@ var fileCollections=  [
 // var url = 'mongodb://mongo:27017'; // production URL
 // var url = 'mongodb://localhost:27017';
 // mongodb atalas connection 
-var url = 'mongodb+srv://keemsisi:GIFTED11@cluster0-uwi4x.mongodb.net/test?retryWrites=true&w=majority';
+var USERNAME = process.env.USERNAME;
+var PASSWORD = process.env.PASSWORD
+var url = `mongodb+srv://${USERNAME}:${PASSWORD}@cluster0-uwi4x.mongodb.net/test?retryWrites=true&w=majority`;
 
 var events = new EventEmitter() ;
 var mongodbClient = null ; // initital client value
