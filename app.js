@@ -7,6 +7,10 @@ var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/user');
 var adminRouter = require('./routes/admin') ;
 var uploadRouter = require('./routes/uploads') ;
+<<<<<<< HEAD
+=======
+var surveyRouter = require('./routes/survey') ;
+>>>>>>> 03bc6e702b93cd9b7e2351ae947912d2122cb0bb
 var applicantsRouter = require('./routes/applicants') ;
 
 
@@ -25,7 +29,11 @@ APPLICATION.use(cookieParser());
 APPLICATION.use(express.static(path.join(__dirname, 'public/pgs-app'))); // the pgs-app home 
 
 APPLICATION.set("Access-Control-Allow-Methods", "POST, PUT, OPTIONS, DELETE, GET , PURGE , UPDATE");
+<<<<<<< HEAD
 APPLICATION.set("Access-Control-Allow-Origin", "*");
+=======
+APPLICATION.set("Access-Control-Allow-Origin", "**");
+>>>>>>> 03bc6e702b93cd9b7e2351ae947912d2122cb0bb
 APPLICATION.set("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
 APPLICATION.set("Access-Control-Allow-Credentials", true);
 
@@ -35,6 +43,10 @@ APPLICATION.use('/users', usersRouter);
 APPLICATION.use("/admin" , adminRouter) ;
 APPLICATION.use("/upload" , uploadRouter) ;
 APPLICATION.use("/applicants" , applicantsRouter) ;
+<<<<<<< HEAD
+=======
+APPLICATION.use("/survey" , surveyRouter) ;
+>>>>>>> 03bc6e702b93cd9b7e2351ae947912d2122cb0bb
 
 
 

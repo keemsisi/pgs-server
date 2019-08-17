@@ -5,6 +5,7 @@ services:
         ports :
         - "8081:8081"
         volumes : 
+<<<<<<< HEAD
           - .:/code
         links:
             - mongo
@@ -13,10 +14,26 @@ services:
         # replace username/repo:tag with your name and image details
         container_name: mongo
         image: mongo
+=======
+          - ./server-volume:/code
+        links:
+            - mongodb:mongodb
+        restart: always
+        depends_on:
+            - mongodb
+    mongodb:
+        # replace username/repo:tag with your name and image details
+        container_name: mongodb
+        image: mongo:latest
+>>>>>>> 03bc6e702b93cd9b7e2351ae947912d2122cb0bb
         ports:
           - "27017:27017"
         restart: always
         volumes:
+<<<<<<< HEAD
             - ./data:/data/db
+=======
+            - ./data:/data/db # the data repository to save the files from the mongodb
+>>>>>>> 03bc6e702b93cd9b7e2351ae947912d2122cb0bb
 
         

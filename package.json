@@ -12,10 +12,20 @@
     "express": "~4.16.0",
     "gridfs-stream": "^1.1.1",
     "http-errors": "~1.6.2",
+<<<<<<< HEAD
+=======
+    "jspdf": "^1.5.3",
+>>>>>>> 03bc6e702b93cd9b7e2351ae947912d2122cb0bb
     "mongodb": "^3.2.3",
     "mongoose": "^5.5.1",
     "morgan": "~1.9.0",
     "multer": "^1.4.1",
+<<<<<<< HEAD
     "multer-gridfs-storage": "^3.2.3"
+=======
+    "multer-gridfs-storage": "^3.2.3",
+    "nodemailer": "^6.3.0",
+    "pdfkit": "^0.10.0"
+>>>>>>> 03bc6e702b93cd9b7e2351ae947912d2122cb0bb
   }
 }
