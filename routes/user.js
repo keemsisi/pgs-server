@@ -46,10 +46,6 @@ router.post('/add', function(req, res, next) {
   handler.insertUser(document , res , null);
 });
 
-<<<<<<< HEAD
-/* INSERT users listing. */
-=======
->>>>>>> 03bc6e702b93cd9b7e2351ae947912d2122cb0bb
 router.get('/:start/:end', function(req, res, next) {
   handler.getUsers(req.params.start , req.params.end , res);
 });
