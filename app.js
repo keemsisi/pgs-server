@@ -9,6 +9,22 @@ var adminRouter = require('./routes/admin') ;
 var uploadRouter = require('./routes/uploads') ;
 var surveyRouter = require('./routes/survey') ;
 var applicantsRouter = require('./routes/applicants') ;
+var cors = require('cors');
+
+var WHITE_LIST_SERVER = [
+  'https://promotbotweb.herokuapp.com',
+  'http://localhost:8081'
+]
+
+var CORS_OPTIONS = {
+  origin : function(origin , callback) {
+    if(WHITE_LIST_SERVER.indexOf(origin) !=-1){
+      callback(null , true);
+    }else {
+      callback(new Error("You are not allowed to access the resources here for security reasons"))
+    }
+  }
+}
 
 
 
@@ -23,20 +39,20 @@ APPLICATION.use(express.json());
 APPLICATION.use(bodyParser.urlencoded({ extended: true , limit : 1000000000000}));
 APPLICATION.use(cookieParser());
 
-APPLICATION.use(express.static(path.join(__dirname, 'public/pgs-app'))); // the pgs-app home 
 
-APPLICATION.set("Access-Control-Allow-Methods", "POST, PUT, OPTIONS, DELETE, GET , PURGE , UPDATE");
+APPLICATION.use(express.static(path.join(__dirname, 'public/pgs-app'))); // the pgs-app home 
 APPLICATION.set("Access-Control-Allow-Origin", "**");
+APPLICATION.set("Access-Control-Allow-Methods", "POST, PUT, OPTIONS, DELETE, GET , PURGE , UPDATE");
 APPLICATION.set("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
 APPLICATION.set("Access-Control-Allow-Credentials", true);
 
 
-APPLICATION.use('/', indexRouter);
-APPLICATION.use('/users', usersRouter);
-APPLICATION.use("/admin" , adminRouter) ;
-APPLICATION.use("/upload" , uploadRouter) ;
-APPLICATION.use("/applicants" , applicantsRouter) ;
-APPLICATION.use("/survey" , surveyRouter) ;
+APPLICATION.use('/', cors() ,indexRouter);
+APPLICATION.use('/users', cors(), usersRouter);
+APPLICATION.use("/admin" , cors(), adminRouter) ;
+APPLICATION.use("/upload" , cors(), uploadRouter) ;
+APPLICATION.use("/applicants" , cors(), applicantsRouter) ;
+APPLICATION.use("/survey" , cors(), surveyRouter) ;
 
 
 
