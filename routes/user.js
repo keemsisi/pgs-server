@@ -33,9 +33,9 @@ router.get('/', function(req, res, next) {
 
 /* GET users listing. */
 router.post('/exists', function(req, res, next) {
-  var username = req.body.username;
-  console.log(username)
-  handler.checkIfApplicantUsernameExist(username , res);
+  var SpNo = req.body.SpNo;
+  console.log(SpNo)
+  handler.checkIfApplicantSpNoExist(SpNo , res);
 });
 
 
@@ -53,7 +53,7 @@ router.get('/:start/:end', function(req, res, next) {
 
 // grant a user access to the dashboard 
 router.post('/grant', function(req, res, next) {
-  handler.verifyUserLoggingCredentials(req.body.username , req.body.password , res);
+  handler.verifyUserLoggingCredentials(req.body.SpNo , req.body.password , res);
 });
 
 
@@ -74,7 +74,7 @@ router.delete('/all-users', function(req, res, next) {
 // router.post('/register',multer().any() , function(req, res, next) {
 //   // router.post('/register', function(req, res, next) {
 //       console.log(req.body) ;
-//       handler.insertApplicant(req.body.loginCred.username ,req.body , res);
+//       handler.insertApplicant(req.body.loginCred.SpNo ,req.body , res);
 // });
 //   //working 
 // router.get('/byId/:id', function(req, res, next) {
@@ -103,8 +103,8 @@ router.delete('/all-users', function(req, res, next) {
 // })
     
 // // get user account information by id
-// router.get('/:username', function(req, res, next) {
-//   handler.getUserByName(req.params.username,res);
+// router.get('/:SpNo', function(req, res, next) {
+//   handler.getUserByName(req.params.SpNo,res);
 // });
 
 /**********Export to the external Modules */

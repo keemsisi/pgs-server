@@ -29,7 +29,7 @@ router.use(function(req, res, next) {
 router.post('/register',multer().any() , function(req, res, next) {
 // router.post('/register', function(req, res, next) {
     console.log(req.body) ;
-    handler.insertApplicant(req.body.loginCred.username ,req.body , res);
+    handler.insertApplicant(req.body.loginCred.SpNo ,req.body , res);
 });
 
 
@@ -45,9 +45,9 @@ router.get('/byname/:name', function(req, res, next) {
 });
 
 // get user account information by id
-router.get('/byusername/:username', function(req, res, next) {
-    console.log(req.params.username);
-    handler.getApplicantByUsername(req.params.username,res);
+router.get('/bySpNo/:SpNo', function(req, res, next) {
+    console.log(req.params.SpNo);
+    handler.getApplicantBySpNo(req.params.SpNo,res);
 });
 
 //working 
@@ -63,8 +63,8 @@ router.delete('/byid/:id', function(req, res, next) {
 });
 
 //united and it is working 
-router.delete('/byusername/:username', function(req, res, next) {
-    handler.deleteApplicantByUsername(req.params.username , res);
+router.delete('/bySpNo/:SpNo', function(req, res, next) {
+    handler.deleteApplicantBySpNo(req.params.SpNo , res);
 });
 
 //working 
