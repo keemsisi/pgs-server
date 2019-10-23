@@ -6,6 +6,7 @@
     "start": "node ./bin/www"
   },
   "dependencies": {
+    "bcrypt": "^3.0.6",
     "cookie-parser": "~1.4.3",
     "cors": "^2.8.5",
     "debug": "~2.6.9",
@@ -20,6 +21,8 @@
     "multer": "^1.4.1",
     "multer-gridfs-storage": "^3.2.3",
     "nodemailer": "^6.3.0",
-    "pdfkit": "^0.10.0"
+    "object-hash": "^2.0.0",
+    "pdfkit": "^0.10.0",
+    "redis": "^2.8.0"
   }
 }

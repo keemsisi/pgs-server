@@ -92,8 +92,8 @@ app.get('/:collectionName/byname/:filename', function (req, res, next) {
 });
 
 // delete file by ID
-app.delete('/_keys_/:collectionName/byId/:SpNo/:id', function (req, res, next) {
-  handler.deleteFileById( req.params.SpNo , req.params.collectionName , req.params.id , res) ;
+app.delete('/_keys_/:collectionName/byId/:spNumber/:id', function (req, res, next) {
+  handler.deleteFileById( req.params.spNumber , req.params.collectionName , req.params.id , res) ;
 });
 
 
@@ -154,8 +154,8 @@ app.delete('/filemappings/all' ,function (req, res, next) {
 
 
 // working 
-app.get('/filemapping/:SpNo' ,function (req, res, next) {
-  handler.getFileMappingsBySpNo(req.params.SpNo,res) ;
+app.get('/filemapping/:spNumber' ,function (req, res, next) {
+  handler.getFileMappingsByspNumber(req.params.spNumber,res) ;
 });
 
 // working ... dev only

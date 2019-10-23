@@ -39,10 +39,10 @@ router.get('/', function(req, res, next) {
 //   handler.countFiles(req.params.fileCollectioname,res);
 // })
 
-// delete an admin from the system  with a matching SpNo 
-router.delete('/:SpNo', function(req, res, next) {
-  console.log("DELETE BODY" , req.params.SpNo);
-  handler.deleteAdmin(req.params.SpNo,res);
+// delete an admin from the system  with a matching spNumber 
+router.delete('/:spNumber', function(req, res, next) {
+  console.log("DELETE BODY" , req.params.spNumber);
+  handler.deleteAdmin(req.params.spNumber,res);
 });
 
 
@@ -54,7 +54,7 @@ router.get('/all', function(req, res, next) {
 // get all the admins in the system 
 router.post('/grant', function(req, res, next) {
   console.log(req.body)
-  handler.verifyAdminLogiCredentials( req.body.SpNo , req.body.password , res);
+  handler.verifyAdminLogiCredentials( req.body.spNumber , req.body.password , res);
 });
 
 
@@ -73,9 +73,9 @@ router.get('/count', function(req, res, next) {
 
 /* GET users listing. */
 router.post('/exists', function(req, res, next) {
-  var SpNo = req.body.SpNo;
-  console.log(SpNo)
-  handler.checkIfAdminSpNoExist(SpNo , res);
+  var spNumber = req.body.spNumber;
+  console.log(spNumber)
+  handler.checkIfAdminspNumberExist(spNumber , res);
 });
 
 

@@ -33,9 +33,9 @@ router.get('/', function(req, res, next) {
 
 /* GET users listing. */
 router.post('/exists', function(req, res, next) {
-  var SpNo = req.body.SpNo;
-  console.log(SpNo)
-  handler.checkIfApplicantSpNoExist(SpNo , res);
+  var spNumber = req.body.spNumber;
+  console.log(spNumber)
+  handler.checkIfApplicantspNumberExist(spNumber , res);
 });
 
 
@@ -43,7 +43,7 @@ router.post('/exists', function(req, res, next) {
 router.post('/add', function(req, res, next) {
   var document = req.body;
   console.log(document)
-  handler.insertUser(document , res , null);
+  handler.insertNewStaff(document , res , null);
 });
 
 router.get('/:start/:end', function(req, res, next) {
@@ -52,8 +52,9 @@ router.get('/:start/:end', function(req, res, next) {
 
 
 // grant a user access to the dashboard 
-router.post('/grant', function(req, res, next) {
-  handler.verifyUserLoggingCredentials(req.body.SpNo , req.body.password , res);
+router.post('/grant',multer().any(), function(req, res, next) {
+  console.log(req.body)
+  handler.verifyUserLoggingCredentials(req.body.spNumber , req.body.password , res);
 });
 
 
@@ -74,7 +75,7 @@ router.delete('/all-users', function(req, res, next) {
 // router.post('/register',multer().any() , function(req, res, next) {
 //   // router.post('/register', function(req, res, next) {
 //       console.log(req.body) ;
-//       handler.insertApplicant(req.body.loginCred.SpNo ,req.body , res);
+//       handler.insertApplicant(req.body.loginCred.spNumber ,req.body , res);
 // });
 //   //working 
 // router.get('/byId/:id', function(req, res, next) {
@@ -103,8 +104,8 @@ router.delete('/all-users', function(req, res, next) {
 // })
     
 // // get user account information by id
-// router.get('/:SpNo', function(req, res, next) {
-//   handler.getUserByName(req.params.SpNo,res);
+// router.get('/:spNumber', function(req, res, next) {
+//   handler.getUserByName(req.params.spNumber,res);
 // });
 
 /**********Export to the external Modules */

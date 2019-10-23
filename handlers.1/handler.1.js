@@ -624,8 +624,8 @@ function getApplicantByName(applicantName, response) {
  * @param {*} collectionName 
  * @param {*} response 
  *///working
- function checkIfApplicantSpNoExist(SpNo , response) {
-    db.collection("users").findOne({"SpNo" : SpNo.trim()},function(err,result){
+ function checkIfApplicantspNumberExist(spNumber , response) {
+    db.collection("users").findOne({"spNumber" : spNumber.trim()},function(err,result){
         if (err) response.send(err);
         else {
             if (result == [] ) {
@@ -643,8 +643,8 @@ function getApplicantByName(applicantName, response) {
  * @param {*} collectionName 
  * @param {*} response 
  *///working
- function checkIfAdminSpNoExist(SpNo  , response) {
-    db.collection("admins").findOne({"SpNo" : SpNo.trim() },function(err,result){
+ function checkIfAdminspNumberExist(spNumber  , response) {
+    db.collection("admins").findOne({"spNumber" : spNumber.trim() },function(err,result){
         if (err) response.send(err);
         else {
             if (result == [] ) {
@@ -662,8 +662,8 @@ function getApplicantByName(applicantName, response) {
  * @param {*} collectionName 
  * @param {*} response 
  *///working
- function verifyUserLoggingCredentials( SpNo , password, response) {
-    db.collection("users").findOne({"SpNo" : SpNo.trim() , "password" : password.trim()},function(err,result){
+ function verifyUserLoggingCredentials( spNumber , password, response) {
+    db.collection("users").findOne({"spNumber" : spNumber.trim() , "password" : password.trim()},function(err,result){
         if (err) response.send(err);
         else {
             if (result == [] ) {
@@ -678,12 +678,12 @@ function getApplicantByName(applicantName, response) {
 
 /**
  * 
- * @param {*} SpNo The admin SpNo
+ * @param {*} spNumber The admin spNumber
  * @param {*} password The admin passowrd 
  * @param {*} response The response the server will send to the admin 
  */
- function verifyAdminLoggingCredentials( SpNo , password, response) {
-    db.collection("admin").findOne({"SpNo" : SpNo.trim(), "password":password.trim()},function(err,result){
+ function verifyAdminLoggingCredentials( spNumber , password, response) {
+    db.collection("admin").findOne({"spNumber" : spNumber.trim(), "password":password.trim()},function(err,result){
         if (err) response.send(err);
         else {
             if (result == [] ) {

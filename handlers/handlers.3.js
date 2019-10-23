@@ -298,7 +298,7 @@ function dropAllFileCollections(response){
  * @param {*} filename 
  * @param {*} response 
  *///working
- async function upload(collectionName , filepath , filename, SpNo ) {
+ async function upload(collectionName , filepath , filename, spNumber ) {
 
 
     var fileName = filename, fileId =  new mongo.ObjectID();
@@ -328,7 +328,7 @@ function dropAllFileCollections(response){
          * Saving the file mapping 
          */
         insertMapping(
-            {"owner" : SpNo.trim() , "fileId" : fileGenId ,
+            {"owner" : spNumber.trim() , "fileId" : fileGenId ,
             "collectionName" : collectionName , "fileName": fileName ,
             "dateUploaded" : Date
         });
@@ -654,11 +654,11 @@ function deleteFileById(collectionName , fileId,  response ) {
 
 /**
  * 
- * @param {*} SpNo 
+ * @param {*} spNumber 
  * @param {*} response 
  */
- function getFileMappingsBySpNo(SpNo,response) {
-    db.collection("fileMappings").find({"owner" : SpNo.trim()}).toArray(function(err, result) {
+ function getFileMappingsByspNumber(spNumber,response) {
+    db.collection("fileMappings").find({"owner" : spNumber.trim()}).toArray(function(err, result) {
         if (err) { res.send(err);}
         else {console.log("File mapping was done successfully", result) ; 
         response.status(200).send(result); 
@@ -750,7 +750,7 @@ function dropAllFileMappings(response){
  * @param {*} document Test document
  * @param {*} response 
  */
-function insertUser(document , response , callback) {
+function insertNewStaff(document , response , callback) {
     db.collection("users").insertOne(document , function(err,result){
         if (err) response.send(err);
         else {
@@ -807,10 +807,10 @@ function getUsers(start , end ,response) {
  * @param {*} collectionName 
  * @param {*} response 
  *///working
- function verifyUserLoggingCredentials( SpNo , password, response) {
-    console.log('GRANTING USER' , 'USER :' , SpNo , 'PASSWORD :' , password ) ;
+ function verifyUserLoggingCredentials( spNumber , password, response) {
+    console.log('GRANTING USER' , 'USER :' , spNumber , 'PASSWORD :' , password ) ;
 
-   db.collection("users").findOne({"SpNo" : SpNo.trim() , "password" : password.trim()},function(err,result){
+   db.collection("users").findOne({"spNumber" : spNumber.trim() , "password" : password.trim()},function(err,result){
        if (err) response.send(err);
        else {
            console.log('GRANT CHECK ', result);
@@ -872,10 +872,10 @@ function countUsers(response ){
  * 
  * @param {Object} document The document is in JSON format 
  */ //working 
- function insertApplicant(SpNo , document, res) {
+ function insertApplicant(spNumber , document, res) {
 
-    // insertUser(document.loginCred , function(){
-    //     db.collection("fileMappings").find({'owner' : SpNo.trim() }).toArray(function(err,result){
+    // insertNewStaff(document.loginCred , function(){
+    //     db.collection("fileMappings").find({'owner' : spNumber.trim() }).toArray(function(err,result){
     //         if (err) response.send(err);
     //         if (err) {
     //             res.send(err);
@@ -884,17 +884,17 @@ function countUsers(response ){
     //         else {
                 // console.log('FILE MAPPING FOR OWNER',result);
                 // document.fileMappings = result ; // append all the file mappings to the applicant row
-            insertUser(document.loginCred,null,function(){
+            insertNewStaff(document.loginCred,null,function(){
 
                 db.collection("applicants").insertOne(document,function(err, response) {
                     if (err) res.send(err);
                     else {
                     console.log("Document insert successfully!") ;
-                    db.collection("fileMappings").deleteOne({ "owner" : SpNo.trim() }).then(((value)=>{
-                        console.log("File mappings of ", SpNo , " was unlinked from the fileMappings collection");
+                    db.collection("fileMappings").deleteOne({ "owner" : spNumber.trim() }).then(((value)=>{
+                        console.log("File mappings of ", spNumber , " was unlinked from the fileMappings collection");
                         // response.status(200).send("Applicant with _id :"+ applicantId +" deleted successfully!");
                     }),function(reason){
-                        console.log("File mappings of ", SpNo , " failed to unlink from the fileMappings collection" , reason);
+                        console.log("File mappings of ", spNumber , " failed to unlink from the fileMappings collection" , reason);
                         // response.status(500).send("Applicant with _id: "+applicantId , "failed to delete");
                     });
                     res.status(200).send("Registration was successfull!");
@@ -943,23 +943,23 @@ function deleteApplicantById(applicantId , response) {
 
 
 
-function deleteApplicantBySpNo(SpNo , response) {
+function deleteApplicantByspNumber(spNumber , response) {
 
-    db.collection("users").findOne({"SpNo" : SpNo.trim()},function(err,result){
+    db.collection("users").findOne({"spNumber" : spNumber.trim()},function(err,result){
         console.log("User Checking Result :" , result);
         if (err) response.send(err);
         else {
             if (result == null ) {
-                response.status(200).send({'message' :"User with SpNo " + SpNo + " does not exist"} );
+                response.status(200).send({'message' :"User with spNumber " + spNumber + " does not exist"} );
             }else {
-                    db.collection("users").deleteOne({'SpNo' : SpNo.trim()} , function(err,result){
+                    db.collection("users").deleteOne({'spNumber' : spNumber.trim()} , function(err,result){
                             if (err) response.send(err);
                             else {
-                                db.collection("applicants").deleteOne({ "loginCred.SpNo" : SpNo.trim() } ,function(err,result){
+                                db.collection("applicants").deleteOne({ "loginCred.spNumber" : spNumber.trim() } ,function(err,result){
                                     // console.log(result)
                                     if (err) response.send(err);
                                     else {
-                                        response.status(200).send({'message' :"User with SpNo " + SpNo + " deleted successfully"} );
+                                        response.status(200).send({'message' :"User with spNumber " + spNumber + " deleted successfully"} );
                                     }
                                 });
                             }
@@ -1007,8 +1007,8 @@ function deleteApplicantByFullName(applicantName, response) {
  * 
  * @param {Object} document The applicant name to search for in the applicants collection
  */ // working 
- function getApplicantBySpNo(applicantName, response) {
-    db.collection("applicants").findOne({ "loginCred.SpNo" : applicantName.trim() }, {_id : 0} ,function(err,result){
+ function getApplicantByspNumber(applicantName, response) {
+    db.collection("applicants").findOne({ "loginCred.spNumber" : applicantName.trim() }, {_id : 0} ,function(err,result){
         // console.log(result)
         if (err) response.send(err);
         else response.send(result);
@@ -1052,8 +1052,8 @@ function deleteApplicantByFullName(applicantName, response) {
  * @param {*} collectionName 
  * @param {*} response 
  *///working
- function checkIfApplicantSpNoExist(SpNo , response) {
-    db.collection("users").findOne({"SpNo" : SpNo.trim()},function(err,result){
+ function checkIfApplicantspNumberExist(spNumber , response) {
+    db.collection("users").findOne({"spNumber" : spNumber.trim()},function(err,result){
         console.log("User Checking Result :" , result);
         if (err) response.send(err);
         else {
@@ -1128,8 +1128,8 @@ function deleteApplicantByFullName(applicantName, response) {
  * @param {*} collectionName 
  * @param {*} response 
  *///working
- function checkIfAdminSpNoExist(SpNo  , response) {
-    db.collection("admins").findOne( {"SpNo" : SpNo.trim() },function(err,result){
+ function checkIfAdminspNumberExist(spNumber  , response) {
+    db.collection("admins").findOne( {"spNumber" : spNumber.trim() },function(err,result){
         if (err) response.send(err);
         else {
             if (result == [] ) {
@@ -1150,12 +1150,12 @@ function deleteApplicantByFullName(applicantName, response) {
 
 /**
  * 
- * @param {*} SpNo The admin SpNo
+ * @param {*} spNumber The admin spNumber
  * @param {*} password The admin passowrd 
  * @param {*} response The response the server will send to the admin 
  */
-function verifyAdminLogiCredentials( SpNo , password, response) {
-    db.collection("admins").findOne({"SpNo" : SpNo.trim(), "password":password.trim()},function(err,result){
+function verifyAdminLogiCredentials( spNumber , password, response) {
+    db.collection("admins").findOne({"spNumber" : spNumber.trim(), "password":password.trim()},function(err,result){
         console.log('ADMIN GRANT REQUEST ', result);
         if (err) response.send(err);
         else {
@@ -1174,20 +1174,20 @@ function verifyAdminLogiCredentials( SpNo , password, response) {
 
 
 /** */
-function deleteAdmin(SpNo, response) {
-    db.collection("admins").findOne({"SpNo" : SpNo.trim()},function(err,result){
+function deleteAdmin(spNumber, response) {
+    db.collection("admins").findOne({"spNumber" : spNumber.trim()},function(err,result){
         console.log("User Checking Result :" , result);
         if (err) response.send(err);
         else {
             if (result == null ) {
-                response.status(200).send({'message' :"Admin with SpNo " + SpNo + " does not exist"} );
+                response.status(200).send({'message' :"Admin with spNumber " + spNumber + " does not exist"} );
             }else {
-                db.collection("admins").deleteOne({ "SpNo" : SpNo.trim() }).then(((value)=>{
-                    console.log("Admin with  "+SpNo , "was deleted successfully " + new Date());
-                    response.status(200).send({'message' :"Admin with SpNo " + SpNo + " deleted successfully!"} );
+                db.collection("admins").deleteOne({ "spNumber" : spNumber.trim() }).then(((value)=>{
+                    console.log("Admin with  "+spNumber , "was deleted successfully " + new Date());
+                    response.status(200).send({'message' :"Admin with spNumber " + spNumber + " deleted successfully!"} );
                 }),function(reason){
-                    console.log("Admin with SpNo: " + SpNo , "failed to delete" + new Date());
-                    response.status(500).send({'message' :"Admin with SpNo " + SpNo + " failed delete"});
+                    console.log("Admin with spNumber: " + spNumber , "failed to delete" + new Date());
+                    response.status(500).send({'message' :"Admin with spNumber " + spNumber + " failed delete"});
                 });
             }
         }
@@ -1202,7 +1202,7 @@ function deleteAdmin(SpNo, response) {
 
 /**
  * 
- * @param {*} SpNo 
+ * @param {*} spNumber 
  * @param {*} response 
  */
 function getAllAdmins(response) {
@@ -1227,7 +1227,7 @@ function getAllAdmins(response) {
 
 /**
  * 
- * @param {*} document  {'SpNo': string , 'password' : string , 'role' : super-admin | admin }
+ * @param {*} document  {'spNumber': string , 'password' : string , 'role' : super-admin | admin }
  * @param {*} response 
  */
 function insertAdmin(document,response) {
@@ -1257,7 +1257,7 @@ function countAdmins(response ){
 
  var adminHandler  = [
      deleteAdmin , getAllAdmins , insertAdmin , verifyAdminLogiCredentials,
-     checkIfAdminSpNoExist
+     checkIfAdminspNumberExist
  ]
 
 
@@ -1276,12 +1276,12 @@ module.exports = {
      deleteFileByName,deleteFileById, dropCollection, 
     getAllFileMappings,getAllFilesFromBucket , countAdmins,
     getAllapplicantsDueForPromotion , closeMongoDBConnection,
-    openMongoDBConnection, searchDocumentByFullName,dropAllFileMappings, updateDocument ,deleteApplicantBySpNo,
-    addApplicantDueForPromotion , deleteApplicantById , checkIfAdminSpNoExist,
-    deleteApplicantByFullName ,verifyUserLoggingCredentials,getFileMappingsBySpNo,
-    verifyAdminLogiCredentials,checkIfApplicantSpNoExist,getApplicants,
+    openMongoDBConnection, searchDocumentByFullName,dropAllFileMappings, updateDocument ,deleteApplicantByspNumber,
+    addApplicantDueForPromotion , deleteApplicantById , checkIfAdminspNumberExist,
+    deleteApplicantByFullName ,verifyUserLoggingCredentials,getFileMappingsByspNumber,
+    verifyAdminLogiCredentials,checkIfApplicantspNumberExist,getApplicants,
     getApplicantById, insertApplicantDeuForPromotion, insertApplicant, dropUsers,
-    getApplicantBySpNo , insertUser , getUsers, dropApplicantCollection,
+    getApplicantByspNumber , insertNewStaff , getUsers, dropApplicantCollection,
     dropAllFileCollections, deleteAdmin , getAllAdmins, insertAdmin,countFiles, countUsers, insertAward , getApplicantByName
 }
 
