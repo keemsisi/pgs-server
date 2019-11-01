@@ -490,7 +490,7 @@ function getAllFilesFromBucket(collectionName ,skip, offset, response) {
  * 
  * @param {Object} document The document is in JSON format 
  */ //working 
-function insertApplicant(spNumber , document, res) {
+function insertAccount(spNumber , document, res) {
 
     insertNewStaff(document.loginCred , function(){
         db.collection("fileMappings").find({'owner' : spNumber },function(err, result) {
@@ -525,7 +525,7 @@ function insertApplicant(spNumber , document, res) {
  * 
  * @param {Object} document The document is in JSON format 
  */ 
-function insertApplicantDeuForPromotion(document , res) {
+function insertAccountDeuForPromotion(document , res) {
     db.collection("applicants").insertOne(document,function(err, response) {
         if (err) res.status(500).send(err);
         else {
@@ -800,6 +800,6 @@ module.exports = {
     getAllFileMappings,getAllFilesFromBucket, insertManyDocuments , getAllapplicantsDueForPromotion , closeMongoDBConnection,
     openMongoDBConnection, searchDocumentByFullName, insertManyDocuments, updateDocument , insertOneDocument,
     addApplicantDueForPromotion , deleteApplicantById , deleteApplicantByFullName ,verifyUserLoggingCredentials,getFileMappingsByspNumber,
-    verifyAdminLoggingCredentials,checkIfApplicantspNumberExist,getAllApplicant, getApplicantById, insertApplicantDeuForPromotion, insertApplicant,
+    verifyAdminLoggingCredentials,checkIfApplicantspNumberExist,getAllApplicant, getApplicantById, insertAccountDeuForPromotion, insertAccount,
      getApplicantByName , insertNewStaff , getUsers, dropAllFileCollections
 }

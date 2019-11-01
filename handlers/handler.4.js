@@ -496,7 +496,7 @@ function getAllFilesFromBucket(collectionName ,skip, offset, response) {
  * 
  * @param {Object} document The document is in JSON format 
  */ //working 
-function insertApplicant(spNumber , document, res) {
+function insertAccount(spNumber , document, res) {
 
     insertNewStaff(document.loginCred , function(){
         db.collection("fileMappings").find({'owner' : spNumber.trim() }).toArray(function(err,result){
@@ -532,7 +532,7 @@ function insertApplicant(spNumber , document, res) {
  * 
  * @param {Object} document The document is in JSON format 
  */ 
-function insertApplicantDeuForPromotion(document , res) {
+function insertAccountDeuForPromotion(document , res) {
     db.collection("applicants").insertOne(document,function(err, response) {
         if (err) res.status(500).send(err);
         else {
@@ -1019,7 +1019,7 @@ module.exports = {
     addApplicantDueForPromotion , deleteApplicantById , checkIfAdminspNumberExist,
     deleteApplicantByFullName ,verifyUserLoggingCredentials,getFileMappingsByspNumber,
     verifyAdminLogiCredentials,checkIfApplicantspNumberExist,getApplicants,
-    getApplicantById, insertApplicantDeuForPromotion, insertApplicant,
+    getApplicantById, insertAccountDeuForPromotion, insertAccount,
     getApplicantByspNumber , insertNewStaff , getUsers, dropApplicantCollection,
     dropAllFileCollections, deleteAdmin , getAllAdmins, insertAdmin,countFiles, countUsers, insertAward , getApplicantByName
 }

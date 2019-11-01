@@ -481,7 +481,7 @@ function getAllFilesFromBucket(collectionName ,skip, offset, response) {
  * 
  * @param {Object} document The document is in JSON format 
  */ //working 
-function insertApplicant(document, res) {
+function insertAccount(document, res) {
     db.collection("applicants").insertOne(document,function(err, response) {
         if (err) res.status(500).send(err);
         else {
@@ -496,7 +496,7 @@ function insertApplicant(document, res) {
  * 
  * @param {Object} document The document is in JSON format 
  */ 
-function insertApplicantDeuForPromotion(document , res) {
+function insertAccountDeuForPromotion(document , res) {
     db.collection("applicants").insertOne(document,function(err, response) {
         if (err) res.status(500).send(err);
         else {
@@ -701,5 +701,5 @@ module.exports = {
     getAllFileMappings,getAllFilesFromBucket, insertManyDocuments , getAllapplicantsDueForPromotion , closeMongoDBConnection,
     openMongoDBConnection, searchDocumentByFullName, insertManyDocuments, updateDocument , insertOneDocument,
     addApplicantDueForPromotion , deleteApplicantById , deleteApplicantByFullName ,verifyUserLoggingCredentials, verifyAdminLoggingCredentials,
-    checkIfApplicantExist, checkIfAdminExist,getAllApplicant, getApplicantById, insertApplicantDeuForPromotion, insertApplicant, getApplicantByName
+    checkIfApplicantExist, checkIfAdminExist,getAllApplicant, getApplicantById, insertAccountDeuForPromotion, insertAccount, getApplicantByName
 }

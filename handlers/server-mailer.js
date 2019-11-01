@@ -1,30 +1,51 @@
 'use strict';
 
 const nodemailer = require('nodemailer');
-const username = process.env.ACCOUNT_USERNAME ;
-const password = process.env.ACCOUNT_PASSWORD ;
+var sgTransport = require('nodemailer-sendgrid-transport');
 
 
-async function sendActivationLink(mailObject) {
-      
+/**
+ * Connection with the sendgrid server 
+ */
+const options = {
+    auth: {
+      api_user: 'SENDGRID_USERNAME',
+      api_key: 'SENDGRID_PASSWORD'
+    }
+  }
+var client = nodemailer.createTransport(sgTransport(options));
+
+
+const username = process.env.ACCOUNT_USERNAME;
+const password = process.env.ACCOUNT_PASSWORD;
+
+
+
+/**
+ * 
+ * @param {var sgTransport = require('nodemailer-sendgrid-transport');
+
+
+ */
+
+async function sendActivationLink(mailObject , callback ) {
+
     // Create a SMTP transporter object
     let transporter = nodemailer.createTransport({
-        host: "smtp.gmail.com",
-        port: 587,
-        secure: false, // upgrade later with STARTTLS
+        service: 'SendGrid',
         auth: {
-          user: username,
-          pass: password
+            user: 'integralcodex',
+            pass: 'GIFTED11@int'
         }
 
     });
 
     // Message object
     let message = {
-        from: 'FUNAAB PROMOTBOT <promotbotfunaab@funaab.edu.ng>',
+        from: 'FUNAAB PROMOTBOT <funaaabpromotbot@unaab.edu.ng>',
 
         // Comma separated list of recipients
-        to: ` new staff <keemsisi@gmail.com>`,
+        to: ` new staff ${mailObject.email}`,
         // bcc: 'andris@ethereal.email',
 
         // Subject of the message
@@ -60,22 +81,43 @@ async function sendActivationLink(mailObject) {
         //         cid: 'note@example.com' // should be as unique as possible
         //     },
 
-            // // File Stream attachment
-            // {
-            //     filename: 'nyan cat ✔.gif',
-            //     path: __dirname + '/assets/nyan.gif',
-            //     cid: 'nyan@example.com' // should be as unique as possible
-            // }
+        // // File Stream attachment
+        // {
+        //     filename: 'nyan cat ✔.gif',
+        //     path: __dirname + '/assets/nyan.gif',
+        //     cid: 'nyan@example.com' // should be as unique as possible
+        // }
         // ]
     };
 
     let info = await transporter.sendMail(message);
 
     console.log('Message sent successfully as %s', info.messageId);
-    
+
 }
 
-sendActivationLink({'message' : "Yes"}).catch(err => {
-    console.error(err.message);
-    process.exit(1);
+const objectHash = require('object-hash')
+const tokenExpiringDate = new Date(Date.now() + (1000 * 24 * 60 * 60));
+const token = objectHash({} + Date.now());
+//working
+sendActivationLink({
+
+    email: "keemsisi@gmail.com",
+
+    message: "Your regiteration was successful , please click on the link to verify your account and the link expires "
+
+        + tokenExpiringDate.toDateString()
+
+        + " at " + tokenExpiringDate.toTimeString() +
+         " .Account activation link : http://promotbotweb.com/account/username/activate/?token=" + token
+
+}).then(function (success) {
+    console.table(success);
+    
+})
+.catch(function(reason) {
+    console.table(reason);
+    // response.send({"errMsg" : reason});
 });
+
+module.exports = {sendActivationLink}

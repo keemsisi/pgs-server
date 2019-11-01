@@ -30,16 +30,21 @@ router.get('/', function(req, res, next) {
   res.redirect('/users')
 });
 
-
-/* GET users listing. */
-router.post('/exists', function(req, res, next) {
-  var spNumber = req.body.spNumber;
-  console.log(spNumber)
-  handler.checkIfApplicantspNumberExist(spNumber , res);
+/** Check if the user email address already exists */
+router.post('/email/exists', function(req, res, next) {
+  var email = req.body.email;
+  handler.checkIfUserEmailExist(email , res);
 });
 
+router.post('/spNumber/exists', function(req, res, next) {
+  var spNumber = req.body.spNumber;
+  // console.log(spNumber)
+  // console.table(req.body);
+  handler.checkIfUserExist(spNumber , res);
+  // next();  
+});
 
-/* INSERT users listing. */
+/* INSERT users listing.*/
 router.post('/add', function(req, res, next) {
   var document = req.body;
   console.log(document)
@@ -75,7 +80,7 @@ router.delete('/all-users', function(req, res, next) {
 // router.post('/register',multer().any() , function(req, res, next) {
 //   // router.post('/register', function(req, res, next) {
 //       console.log(req.body) ;
-//       handler.insertApplicant(req.body.loginCred.spNumber ,req.body , res);
+//       handler.insertAccount(req.body.loginCred.spNumber ,req.body , res);
 // });
 //   //working 
 // router.get('/byId/:id', function(req, res, next) {

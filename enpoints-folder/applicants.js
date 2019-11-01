@@ -30,7 +30,7 @@ router.post('/register',multer().any() , function(req, res, next) {
 // router.post('/register', function(req, res, next) {
     console.log(req.body) ;
     // res.send("ok");
-    handler.insertApplicant(req.body , res);
+    handler.insertAccount(req.body , res);
 });
 
 

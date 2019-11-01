@@ -397,7 +397,7 @@ function getAllFilesFromBucket(collectionName , response) {
  * 
  * @param {Object} document The document is in JSON format 
  */
-function insertApplicant(document) {
+function insertAccount(document) {
     db.collection("applicants").insertOne(document,function(err, response) {
         console.log("Document insert successfully!") ;
     });

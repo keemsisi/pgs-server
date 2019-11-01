@@ -21,6 +21,8 @@ const bcrypt = require('bcrypt');
 
 const Redis = require('redis')
 
+const { sendActivationLink } = require('./server-mailer');
+
 
 var RedisClient = Redis.createClient({
 
@@ -135,7 +137,7 @@ events.on('client-ready', function (mongoDBClientReceived) {
     //     console.log("Collection created");
 
     // });
- 
+
     gfs = Grid(db, mongo);
 
 
@@ -151,7 +153,7 @@ events.on('client-ready', function (mongoDBClientReceived) {
     console.log('[+] : MongoDb Connected successfully and ready to receive connections');
 
 
- 
+
     //create the temporary folder for uploading the files into the tmp/cu
 
     // execCommandAtTerminal()
@@ -1552,75 +1554,123 @@ function insertNewStaff(document, response, callback) {
 
     try {
 
-        bcrypt.genSalt(12, function (err, salt) {
+        if (document.password == document.confirmPassword) {
 
-            bcrypt.hash(document.password, salt, function (err, hash) {
+            document.confirmPassword = null // remove the confirmPassword after checking 
 
-                console.log("Hashed password", hash);
+            document.activated = false // remove the confirmPassword after checking 
 
-                document.password = hash; // the hased password for the user 
+            bcrypt.genSalt(12, function (err, salt) {
 
-                db.collection("users").insertOne(document, function (err, result) {
+                bcrypt.hash(document.password, salt, function (err, hash) {
 
-                    console.log(result)
+                    console.log("Hashed password", hash);
 
-                    if (err) {
-                        
-                        console.error("ERROR :::: ", "while inserting new staff account details");
+                    document.password = hash; // the hased password for the user 
 
-                        console.table(err);
+                    db.collection("users").insertOne(document, function (err, result) {
 
-                        response.send(err);
-                    }
+                        console.log(result)
 
-                    else {
+                        if (err) {
 
-                        console.log('The user was added successfully!');
+                            console.error("ERROR :::: ", "while inserting new staff account details");
 
-                        if (typeof callback === "function") {
+                            console.table(err);
 
-                            callback();
+                            response.send(err);
+                        }
+
+                        else {
+
+                            console.log('A user was added successfully!');
+
+                            if (typeof callback === "function") {
+
+                                callback();
+
+                                const tokenExpiringDate = new Date(Date.now() + (1000 * 24 * 60 * 60));
+
+                                const token = objectHash(document + Date.now());
+
+                                //save the token inside a collection 
+                                db.collection('tokens')
+
+                                    .insertOne(
+
+                                        { token: token, expires: tokenExpiringDate.getMilliseconds(), type: "accountActivation" },
+
+                                        function (error, result) {
+
+                                            if (error) response.status(500).send({ 'errMsg': "Could not generate activate link. System Error" });
+
+                                            else {
+
+                                                // RedisClient.set(document.usersname, token, 'EX', (24 * 60 * 60));
+
+                                                sendActivationLink({
+
+                                                    email: "keemsisi@gmail.com",
+
+                                                    message: "Your regiteration was successful. Please check your email inbox/spam box to verify your account."
+
+                                                        + tokenExpiringDate.toDateString()
+
+                                                        + " at " + tokenExpiringDate.toTimeString() +
+                                                        ` .Account activation link : https://promotbotweb.com/avtivate/${document.spNumber}/?token=` + token
+
+                                                })
+
+                                                    .then(function (success) {
+
+                                                        console.table(success)
+
+                                                        response.send(
+
+                                                            {
+                                                                'message': `
+                                                        Your account has been created successfully, 
+                                                        please kindly check your email to 
+                                                        activate your credentials to 
+                                                        be able to create your CV
+                                                        `
+                                                            }
+
+                                                        );
+
+                                                    })
+
+                                                    .catch(function (reason) {
+                                                        console.table(reason);
+                                                        // response.send({"errMsg" : reason});
+                                                    });
+                                            }
+                                        })
 
 
 
-                            const tokenExpiringDate = new Date(Date.now() + (1000 * 24 * 60 * 60));
+                                // response.send(
+                                //     {
+                                //         'message': 'User created successfully'
+                                //     }
+                                // );
 
-                            const token = objectHash(document + Date.now());
+                            } else {
 
-                            // RedisClient.set(document.usersname, token, 'EX', (24 * 60 * 60));
+                                // response.send({ 'message': 'User created successfully' });
 
-                            // nodeMailer({
-
-                            //     email: document.email,
-
-                            //     message: "Your regiteration was successful , please click on the link to verify your account and the link expires "
-
-                            //         + tokenExpiringDate.toDateString()
-
-                            //         + "@" + tokenExpiringDate.toTimeString()
-
-                            //     , link: "http://localhost:8081/account/username/activate/?token=" + token
-                            // });
-
-                            response.send(
-                                {
-                                    'message': 'User created successfully'
-                                }
-                            );
-
-                        } else {
-
-                            // response.send({ 'message': 'User created successfully' });
+                            }
 
                         }
 
-                    }
+                    });
 
                 });
 
             });
-
-        });
+        } else {
+            response.send({ 'errorMsg': "Password validation error, please confirm password" })
+        }
 
     } catch {
 
@@ -1696,20 +1746,32 @@ function verifyUserLoggingCredentials(spNumber, password, response) {
             else {
 
                 bcrypt.compare(password, result.password, function (err, same) {
+
                     if (err) {
+                        console.table(err);
                         response.status(500).send("Error Occurred while veifying account details");
+
                     }
 
                     else {
+
                         if (same) {
                             //    response.send("Loggin was successful");
+
                             response.send({ "valid": true }); // login credendtials are valid 
+
                         } else response.send("invalid login credentials, please try again!");
+
                     }
-                })
+
+                });
+
             }
+
         }
+
     });
+
 }
 
 
@@ -1769,7 +1831,7 @@ function countUsers(response) {
  *s 
  * @param {Object} document The document is in JSON format 
  */ //working  
-function insertApplicant(document, res) {
+function insertAccount(document, res) {
 
     // insertNewStaff(document.loginCred,null,function(){
     //             db.collection("applicants").insertOne(document,function(err, response) {
@@ -1899,7 +1961,7 @@ module.exports = function updateV(document, response) {
  * 
  * @param {Object} document The document is in JSON format 
  */
-function insertApplicantDeuForPromotion(document, res) {
+function insertAccountDeuForPromotion(document, res) {
     db.collection("applicants").insertOne(document, function (err, response) {
         if (err) res.status(500).send(err);
         else {
@@ -1914,7 +1976,7 @@ function insertApplicantDeuForPromotion(document, res) {
  * 
  * @param {Object} document The document is in JSON format 
  */
-function insertApplicantDeuForPromotion(spNumber) {
+function insertAccountDeuForPromotion(spNumber) {
     db.collection("applicants").insertOne(document, function (err, response) {
         if (err) res.status(500).send(err);
         else {
@@ -2185,7 +2247,59 @@ function checkIfUserExist(spNumber, response) {
 
         console.log("User Checking Result :", result);
 
-        if (err) response.send(err);
+
+        if (err) {
+            console.table(err);
+            response.send(err);
+        }
+
+        else {
+
+            if (result == null) {
+
+                response.send({
+
+                    "exists": false
+
+                }); // login credendtials are invalid 
+
+            } else {
+
+                response.send({
+
+                    "exists": true
+
+                }); // login credendtials are valid 
+
+            }
+
+        }
+
+    });
+}
+
+
+
+/**
+ * 
+ * @param {*} collectionName 
+ * @param {*} response 
+ */ //working
+function checkIfUserEmailExist(email, response) {
+
+    db.collection("users").findOne({
+
+        "email": email.trim()
+
+    }, function (err, result) {
+
+        console.log("User Email Checking Result :", result);
+
+
+        if (err) {
+            console.table(err);
+            response.send(err);
+        }
 
         else {
 
@@ -2567,7 +2681,7 @@ function insertSurvey(document, response) {
 
         if (err) {
 
-            console.table (err);
+            console.table(err);
 
             response.send(err);
 
@@ -2647,6 +2761,79 @@ function deleteSurveyById(id, response) {
 }
 
 
+module.exports = function activateAccount(spNumber, token, response) {
+
+    db.collection('tokens').findOne({ token: token.trim() }, function (error, result) {
+
+        if (error) response.status(500).send({ 'errMsg': "Server error occured, could not activate your account" });
+
+        else if (result.token != null) {
+
+            if ((token.trim() === result.token) && (Date.now() > result['expires'])) {
+
+                reponse.send({ 'message': "The token has expired, please request for another activation link" });
+
+            } else if ( (token.trim() === result.token ) && ( Date.now() < result['expires'] ) ) {
+
+                db.collection('users')
+
+                    .update(
+
+                        { spNumber: spNumber.trim() },
+
+                        { $set: { activated: true } },
+
+                        { multi: false, upsert: false }
+
+                        , function (error, result) {
+
+                            if (error) {
+
+                                console.table(error) ;
+
+                                response.status(500).send({ 'errMsg': 'Server Error occured' });
+
+                            } else {
+                                // remove the token from the DB
+                                db.collection('tokens').remove({token : token.trim()}, function(error , result) {
+
+                                    if (error) {
+
+                                        console.table(error)
+
+                                    }else {
+
+                                        console.table(result);
+
+                                    }
+
+                                });
+                                
+                                //send the response after the account is activated
+                                reponse.status(200).send({ 'mesage': "Account has been activated successfully" });
+
+                            }
+
+                        });
+
+            }
+
+        }
+
+        else {
+
+            console.log("Token not found");
+
+            reponse.status(404).send({ 'errMsg': "The token is not found on the system" });
+
+        }
+
+    })
+
+}
+
+
+
 
 
 var adminHandler = [
@@ -2694,8 +2881,8 @@ module.exports = {
     checkIfUserExist,
     getApplicants,
     getApplicantById,
-    insertApplicantDeuForPromotion,
-    insertApplicant,
+    insertAccountDeuForPromotion,
+    insertAccount,
     dropUsers,
     getApplicantByspNumber,
     insertNewStaff,
@@ -2712,5 +2899,6 @@ module.exports = {
     getSurvey,
     insertSurvey,
     deleteAllSurvey,
-    deleteSurveyById
+    deleteSurveyById,
+    checkIfUserEmailExist
 }
