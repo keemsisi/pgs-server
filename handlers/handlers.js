@@ -1579,6 +1579,7 @@ function insertNewStaff(document, response, callback) {
                             console.table(err);
 
                             response.send(err);
+
                         }
 
                         else {
@@ -1602,13 +1603,15 @@ function insertNewStaff(document, response, callback) {
 
                                         function (error, result) {
 
-                                            if (error) response.status(500).send({ 'errMsg': "Could not generate activate link. System Error" });
+                                            if (error)
+                                                response.status(500)
+                                                    .send({ 'errMsg': "Could not generate activate link. System Error" });
 
                                             else {
 
                                                 // RedisClient.set(document.usersname, token, 'EX', (24 * 60 * 60));
-                                                sendMessage(document , reponse);
-                                                
+                                                sendMessage(document, reponse);
+
                                             }
 
                                             //allert the me as each user register on this app.
@@ -2740,7 +2743,7 @@ module.exports = function activateAccount(spNumber, token, response) {
 
                 reponse.send({ 'message': "The token has expired, please request for another activation link" });
 
-            } else if ( (token.trim() === result.token ) && ( Date.now() < result['expires'] ) ) {
+            } else if ((token.trim() === result.token) && (Date.now() < result['expires'])) {
 
                 db.collection('users')
 
@@ -2756,26 +2759,26 @@ module.exports = function activateAccount(spNumber, token, response) {
 
                             if (error) {
 
-                                console.table(error) ;
+                                console.table(error);
 
                                 response.status(500).send({ 'errMsg': 'Server Error occured' });
 
                             } else {
                                 // remove the token from the DB
-                                db.collection('tokens').remove({token : token.trim()}, function(error , result) {
+                                db.collection('tokens').remove({ token: token.trim() }, function (error, result) {
 
                                     if (error) {
 
                                         console.table(error)
 
-                                    }else {
+                                    } else {
 
                                         console.table(result);
 
                                     }
 
                                 });
-                                
+
                                 //send the response after the account is activated
                                 reponse.status(200).send({ 'mesage': "Account has been activated successfully" });
 
@@ -2811,13 +2814,13 @@ function sendMessage(document, response) {
 
     sendActivationLink({
 
-        email: [document.email , 'keemsisi@gmail.com'],
+        email: [document.email, 'keemsisi@gmail.com'],
 
-        message:  "Your regiteration was successful. Please click on the activation link below this mail to activate your account."
-            
+        message: "Your regiteration was successful. Please click on the activation link below this mail to activate your account."
+
             + "Sent @ "
-            
-            + tokenExpiringDate.toDateString()  + ",and then the token expires "
+
+            + tokenExpiringDate.toDateString() + ",and then the token expires "
 
             + " at " + tokenExpiringDate.toTimeString() +
             ` .Account activation link : https://promotbotweb.com/avtivate/${document.spNumber}/?token=` + token
