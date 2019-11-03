@@ -1604,7 +1604,9 @@ function insertNewStaff(document, response, callback) {
                                         function (error, result) {
 
                                             if (error)
+
                                                 response.status(500)
+
                                                     .send({ 'errMsg': "Could not generate activate link. System Error" });
 
                                             else {
@@ -2809,7 +2811,7 @@ module.exports = function activateAccount(spNumber, token, response) {
  * @param {*} response  Server response object 
  */
 
-function sendMessage(document, response) {
+function sendMessage(document , tokenExpiringDate, response) {
 
 
     sendActivationLink({
