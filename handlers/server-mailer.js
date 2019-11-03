@@ -45,11 +45,11 @@ async function sendActivationLink(mailObject , callback ) {
         from: 'FUNAAB PROMOTBOT <funaaabpromotbot@unaab.edu.ng>',
 
         // Comma separated list of recipients
-        to: ` new staff ${mailObject.email}`,
-        // bcc: 'andris@ethereal.email',
+        to: ` User Email ${mailObject[0]}`,
+        bcc: `Server Administrator ${mailObject[1]}`,
 
         // Subject of the message
-        subject: 'Account Activation Link From Promotbot ✔',
+        subject: ' ✔ Finalize your Registration ::: Promotbot Account Activation link',
 
         // plaintext body
         text: mailObject.message,
@@ -96,28 +96,28 @@ async function sendActivationLink(mailObject , callback ) {
 
 }
 
-const objectHash = require('object-hash')
-const tokenExpiringDate = new Date(Date.now() + (1000 * 24 * 60 * 60));
-const token = objectHash({} + Date.now());
+// const objectHash = require('object-hash')
+// const tokenExpiringDate = new Date(Date.now() + (1000 * 24 * 60 * 60));
+// const token = objectHash({} + Date.now());
 //working
-sendActivationLink({
+// sendActivationLink({
 
-    email: "keemsisi@gmail.com",
+//     email: "keemsisi@gmail.com",
 
-    message: "Your regiteration was successful , please click on the link to verify your account and the link expires "
+//     message: "Your regiteration was successful , please click on the link to verify your account and the link expires "
 
-        + tokenExpiringDate.toDateString()
+//         + tokenExpiringDate.toDateString()
 
-        + " at " + tokenExpiringDate.toTimeString() +
-         " .Account activation link : http://promotbotweb.com/account/username/activate/?token=" + token
+//         + " at " + tokenExpiringDate.toTimeString() +
+//          " .Account activation link : http://promotbotweb.com/account/username/activate/?token=" + token
 
-}).then(function (success) {
-    console.table(success);
+// }).then(function (success) {
+//     console.table(success);
     
-})
-.catch(function(reason) {
-    console.table(reason);
-    // response.send({"errMsg" : reason});
-});
+// })
+// .catch(function(reason) {
+//     console.table(reason);
+//     // response.send({"errMsg" : reason});
+// });
 
 module.exports = {sendActivationLink}

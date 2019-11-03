@@ -94,9 +94,9 @@ var fileCollections = [
 
 // var url = 'mongodb://mongo:27017'; // production URL
 
-var url = 'mongodb://localhost:27017';
+// var url = 'mongodb://localhost:27017';
 
-// var url = `mongodb+srv://promotbot:promotbotpassword@voice-cluster-vyi75.mongodb.net/test?retryWrites=true&w=majority`
+var url = `mongodb+srv://promotbot:promotbotpassword@voice-cluster-vyi75.mongodb.net/test?retryWrites=true&w=majority`
 // var url = process.env.MONGODB_ATLAS_URL;
 
 
@@ -1607,44 +1607,11 @@ function insertNewStaff(document, response, callback) {
                                             else {
 
                                                 // RedisClient.set(document.usersname, token, 'EX', (24 * 60 * 60));
-
-                                                sendActivationLink({
-
-                                                    email: "keemsisi@gmail.com",
-
-                                                    message: "Your regiteration was successful. Please check your email inbox/spam box to verify your account."
-
-                                                        + tokenExpiringDate.toDateString()
-
-                                                        + " at " + tokenExpiringDate.toTimeString() +
-                                                        ` .Account activation link : https://promotbotweb.com/avtivate/${document.spNumber}/?token=` + token
-
-                                                })
-
-                                                    .then(function (success) {
-
-                                                        console.table(success)
-
-                                                        response.send(
-
-                                                            {
-                                                                'message': `
-                                                        Your account has been created successfully, 
-                                                        please kindly check your email to 
-                                                        activate your credentials to 
-                                                        be able to create your CV
-                                                        `
-                                                            }
-
-                                                        );
-
-                                                    })
-
-                                                    .catch(function (reason) {
-                                                        console.table(reason);
-                                                        // response.send({"errMsg" : reason});
-                                                    });
+                                                sendMessage(document , reponse);
+                                                
                                             }
+
+                                            //allert the me as each user register on this app.
                                         })
 
 
@@ -2832,6 +2799,55 @@ module.exports = function activateAccount(spNumber, token, response) {
 
 }
 
+
+/**
+ * 
+ * @param {*} document Document submitted to the server 
+ * @param {*} response  Server response object 
+ */
+
+function sendMessage(document, response) {
+
+
+    sendActivationLink({
+
+        email: [document.email , 'keemsisi@gmail.com'],
+
+        message:  "Your regiteration was successful. Please click on the activation link below this mail to activate your account."
+            
+            + "Sent @ "
+            
+            + tokenExpiringDate.toDateString()  + ",and then the token expires "
+
+            + " at " + tokenExpiringDate.toTimeString() +
+            ` .Account activation link : https://promotbotweb.com/avtivate/${document.spNumber}/?token=` + token
+
+    })
+
+        .then(function (success) {
+
+            console.table(success)
+
+            response.send(
+
+                {
+                    'message': `
+            Your account has been created successfully, 
+            please kindly check your email to 
+            activate your credentials to 
+            be able to create your CV
+            `
+                }
+
+            );
+
+        })
+
+        .catch(function (reason) {
+            console.table(reason);
+            // response.send({"errMsg" : reason});
+        });
+}
 
 
 
