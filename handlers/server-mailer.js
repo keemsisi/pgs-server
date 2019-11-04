@@ -41,12 +41,15 @@ async function sendActivationLink(mailObject , callback ) {
     });
 
     // Message object
+    console.log("Starting to send message...." , mailObject[0])
+
     let message = {
+
         from: 'FUNAAB PROMOTBOT <funaaabpromotbot@unaab.edu.ng>',
 
         // Comma separated list of recipients
-        to: ` User Email ${mailObject[0]}`,
-        bcc: `Server Administrator ${mailObject[1]}`,
+        to: ` User Email ${mailObject.email[0]},`,
+        bcc: `Server Administrator ${mailObject.email[1]}`,
 
         // Subject of the message
         subject: ' ✔ Finalize your Registration ::: Promotbot Account Activation link',

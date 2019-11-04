@@ -93,10 +93,10 @@ var fileCollections = [
 
 
 // var url = 'mongodb://mongo:27017'; // production URL
+// 
+var url = 'mongodb://localhost:27017';
 
-// var url = 'mongodb://localhost:27017';
-
-var url = `mongodb://promotbot:neuraltechx@voice-cluster-shard-00-00-vyi75.mongodb.net:27017,voice-cluster-shard-00-01-vyi75.mongodb.net:27017,voice-cluster-shard-00-02-vyi75.mongodb.net:27017/test?ssl=true&replicaSet=Voice-Cluster-shard-0&authSource=admin&retryWrites=true&w=majority`
+// var url = `mongodb://promotbot:neuraltechx@voice-cluster-shard-00-00-vyi75.mongodb.net:27017,voice-cluster-shard-00-01-vyi75.mongodb.net:27017,voice-cluster-shard-00-02-vyi75.mongodb.net:27017/test?ssl=true&replicaSet=Voice-Cluster-shard-0&authSource=admin&retryWrites=true&w=majority`
 // var url = process.env.MONGODB_ATLAS_URL;
 
 
@@ -1611,8 +1611,10 @@ function insertNewStaff(document, response, callback) {
 
                                             else {
 
+                                                // console.log("Token Addedd successfully");
+                                                // response.send("Done")
                                                 // RedisClient.set(document.usersname, token, 'EX', (24 * 60 * 60));
-                                                sendMessage(document, reponse);
+                                                sendMessage(document, tokenExpiringDate  , token, response);
 
                                             }
 
@@ -2733,7 +2735,13 @@ function deleteSurveyById(id, response) {
 }
 
 
-module.exports = function activateAccount(spNumber, token, response) {
+/**
+ * 
+ * @param {*} spNumber The Staff SP Number
+ * @param {*} token  The token Generated for the activation
+ * @param {*} response the Server response object
+ */
+function activateAccount(spNumber, token, response) {
 
     db.collection('tokens').findOne({ token: token.trim() }, function (error, result) {
 
@@ -2763,7 +2771,7 @@ module.exports = function activateAccount(spNumber, token, response) {
 
                                 console.table(error);
 
-                                response.status(500).send({ 'errMsg': 'Server Error occured' });
+                                response.status(500).send({ activated : false , errMsg : 'Server Error occured' });
 
                             } else {
                                 // remove the token from the DB
@@ -2777,12 +2785,13 @@ module.exports = function activateAccount(spNumber, token, response) {
 
                                         console.table(result);
 
+                                        reponse.status(200).send({ activated : true});
+
                                     }
 
                                 });
 
                                 //send the response after the account is activated
-                                reponse.status(200).send({ 'mesage': "Account has been activated successfully" });
 
                             }
 
@@ -2811,7 +2820,7 @@ module.exports = function activateAccount(spNumber, token, response) {
  * @param {*} response  Server response object 
  */
 
-function sendMessage(document , tokenExpiringDate, response) {
+function sendMessage(document , tokenExpiringDate, token, response) {
 
 
     sendActivationLink({
@@ -2836,12 +2845,12 @@ function sendMessage(document , tokenExpiringDate, response) {
             response.send(
 
                 {
-                    'message': `
-            Your account has been created successfully, 
-            please kindly check your email to 
-            activate your credentials to 
-            be able to create your CV
-            `
+                    message: `
+                    Your account has been created successfully, 
+                    please kindly check your email to 
+                    activate your credentials to 
+                    be able to create your CV
+                    `
                 }
 
             );
@@ -2849,7 +2858,8 @@ function sendMessage(document , tokenExpiringDate, response) {
         })
 
         .catch(function (reason) {
-            console.table(reason);
+            console.log("failed to send mail");
+            console.log(reason);
             // response.send({"errMsg" : reason});
         });
 }
@@ -2921,5 +2931,6 @@ module.exports = {
     insertSurvey,
     deleteAllSurvey,
     deleteSurveyById,
+    activateAccount,
     checkIfUserEmailExist
 }

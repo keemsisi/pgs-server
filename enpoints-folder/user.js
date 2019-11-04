@@ -68,6 +68,11 @@ router.get('/count', function(req, res, next) {
   handler.countUsers(res);
 });
 
+// count the users 
+router.get('/activate/:spNumber', function(req, res, next) {
+  handler.activateAccount(req.params['spNumber'] , req.query['token'] , res);
+});
+
 
 // count the users 
 router.delete('/all-users', function(req, res, next) {
