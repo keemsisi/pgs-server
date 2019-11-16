@@ -1,15 +1,13 @@
 var mongo = require('mongodb');
 
 objectHash = require('object-hash')
-
 var test = require('assert');
 
 var hash = require('object-hash');
 
 var assert = require('assert');
 
-
-// const {db}  = require('../config/MongoDbConfig');
+var EventEmitter = require('events');
 
 var fs = require('fs');
 
@@ -21,14 +19,38 @@ const exec = util.promisify(require('child_process').exec);
 
 const bcrypt = require('bcrypt');
 
-var EventEmitter = require('events');
-
-const { RedisCleint } = require('../config/RedisConfig');
+const Redis = require('redis')
 
 const { sendActivationLink } = require('./server-mailer');
 
 
+var RedisClient = Redis.createClient({
 
+    retry_strategy: function (options) {
+
+        if (options.error && options.error.code === 'ECONNREFUSED') {
+
+            return new Error('The server refused the connection');
+
+        }
+
+        if (options.total_retry_time > 1000 * 60 * 60) {
+
+            return new Error('Retry time exhausted');
+
+        }
+
+        if (options.attempt > 10) {
+
+            return undefined;
+
+        }
+
+        return Math.min(options.attempt * 100, 3000);
+
+    }
+}
+);
 
 
 
@@ -328,7 +350,7 @@ function searchDocumentByFullName(fullname) {
 
 function updateDocument(fullName, newPostToApplyFor) {
 
-    mongodbClient.db('pgs-db').collection('admin').updateOne({
+    mongodbClient.db('pgs-db').collection('admin').update({
 
         "fullName": fullName
 
@@ -493,6 +515,40 @@ var fileHelper = (collectionName, filename, fileId) => {
 };
 
 
+
+
+
+
+function F() {
+
+    this.collectionName = null;
+
+    this.fileName = null;
+
+    this.fileId = null;
+
+}
+
+
+var g = new F();
+
+events.on('ready', (collectionName, filename, fileId) => {
+
+
+    g.collectionName = collectionName;
+
+    g.fileId = fileId;
+
+    g.fileName = filename;
+
+
+
+    //return nextMappings ;
+
+    console.log("------------------", g.collectionName);
+
+
+});
 
 // dev 
 /**
@@ -1500,9 +1556,7 @@ function insertNewStaff(document, response, callback) {
 
         if (document.password == document.confirmPassword) {
 
-            delete document.confirmPassword // remove the confirmPassword after checking 
-
-            console.log("Something was deleted");
+            document.confirmPassword = null // remove the confirmPassword after checking 
 
             document.activated = false // remove the confirmPassword after checking 
 
@@ -1516,7 +1570,7 @@ function insertNewStaff(document, response, callback) {
 
                     db.collection("users").insertOne(document, function (err, result) {
 
-                        // console.log(result)
+                        console.log(result)
 
                         if (err) {
 
@@ -1530,26 +1584,45 @@ function insertNewStaff(document, response, callback) {
 
                         else {
 
-                            console.log('A user was added successfully!', typeof callback === 'function');
-
-
+                            console.log('A user was added successfully!');
 
                             if (typeof callback === "function") {
 
-                                // callback();
-                                // console.log('yes');
+                                callback();
 
-                                //genenerate the token and store the new user into the database and set account activation to false
+                                const tokenExpiringDate = new Date(Date.now() + (1000 * 24 * 60 * 60));
 
-                                console.log(document);
+                                const token = objectHash(document + Date.now());
 
-                                generateToken(document, response, "new-account");
+                                //save the token inside a collection 
 
-                                // const tokenExpiringDate = resolvedresult[0];
+                                
+                                db.collection('tokens')
 
-                                // const token = resolvedresult[1];
+                    
+                                    .insertOne(
 
-                                // sendMessage(document , tokenExpiringDate , token , response) ;
+                                        { token: token, expires: tokenExpiringDate.get(), type: "accountActivation" },
+
+                                        function (error, result) {
+
+                                            if (error)
+
+                                                response.status(500)
+
+                                                    .send({ 'errMsg': "Could not generate activate link. System Error" });
+
+                                            else {
+
+                                                // console.log("Token Addedd successfully");
+                                                // response.send("Done")
+                                                // RedisClient.set(document.usersname, token, 'EX', (24 * 60 * 60));
+                                                sendMessage(document, tokenExpiringDate, token, response);
+
+                                            }
+
+                                            //allert the me as each user register on this app.
+                                        })
 
 
 
@@ -1558,6 +1631,10 @@ function insertNewStaff(document, response, callback) {
                                 //         'message': 'User created successfully'
                                 //     }
                                 // );
+
+                            } else {
+
+                                // response.send({ 'message': 'User created successfully' });
 
                             }
 
@@ -1653,13 +1730,8 @@ function verifyUserLoggingCredentials(spNumber, password, response) {
 
             if (result == null) {
 
-                response.send({
+                response.send({ "valid": false }); // login credendtials are invalid 
 
-                    "valid": false,
-
-                    message: `Account with the Sp Number "${spNumber}" does not exists. Please enter correct Sp Number.`,
-
-                }); // login credendtials are valid 
             }
 
             else {
@@ -1676,60 +1748,12 @@ function verifyUserLoggingCredentials(spNumber, password, response) {
 
                     else {
 
-                        if (same == true && result.activated == true) {
+                        if (same) {
+                            //    response.send("Loggin was successful");
 
-                            response.send({
+                            response.send({ "valid": true }); // login credendtials are valid 
 
-                                "valid": true,
-
-                                message: "Credentials matched. Please wait while we take you to your account dashboard.",
-
-                                activated: true
-
-                            }); // login credendtials are valid 
-
-                        }
-
-                        else if (same == true && result.activated == false) {
-
-                            response.send({
-
-                                "valid": true,
-
-                                message: "Credentials matched an account but the account is not yet activated. Please activated your account before access can be granted.",
-
-                                activated: false
-
-                            }); // login credendtials are valid 
-                        }
-
-
-                        else if (same == false && result.activated == false) {
-
-                            response.send({
-
-                                "valid": false,
-
-                                message: "Credential mismatched and your account has not beem activated yet.",
-
-                                activated: false
-
-                            }); // login credendtials are valid 
-                        }
-
-
-                        else if (same == false && result.activated == true) {
-
-                            response.send({
-
-                                "valid": false,
-
-                                message: `Sp Number "${spNumber}" exists but the password is incorrect. Please try loggin in again.`,
-
-                                activated: true
-
-                            }); // login credendtials are valid 
-                        }
+                        } else response.send("invalid login credentials, please try again!");
 
                     }
 
@@ -1800,7 +1824,7 @@ function countUsers(response) {
  *s 
  * @param {Object} document The document is in JSON format 
  */ //working  
-function insertAccount(document, response) {
+function insertAccount(document, res) {
 
     // insertNewStaff(document.loginCred,null,function(){
     //             db.collection("applicants").insertOne(document,function(err, response) {
@@ -1819,31 +1843,14 @@ function insertAccount(document, response) {
     //         });
     // });
 
-    checkIfUserEmailExist(document.email, response, function callback(condition) {
 
-        if (condition) {
-
-            response.status(500).send({ errorMsg: 'The email provided is already registered, kindly use another one.' });
-
-        }
-
-        else {
-
-            insertNewStaff(document, response, function callback() {
-
-                console.log("Staff Added successfully");
-
-            });
-
-        }
-
+    insertNewStaff(document, res, function () {
+        console.log("Staff Added successfully");
     });
-
 }
 
 
 module.exports = function insertCv(document, res) {
-
     insertNewStaff(document.loginCred, null, function () {
         //format {"spNumber" : form values}
         db.collection("users-curriculum-vitae").insertOne(document, function (err, response) {
@@ -1948,21 +1955,13 @@ module.exports = function updateV(document, response) {
  * @param {Object} document The document is in JSON format 
  */
 function insertAccountDeuForPromotion(document, res) {
-
     db.collection("applicants").insertOne(document, function (err, response) {
-
         if (err) res.status(500).send(err);
-
         else {
-
             console.log("Document insert successfully!", response);
-
             res.status(200).send("Applicant : ", document.fullname, " , was successfully registered for promotion!");
-
         }
-
     });
-
 }
 
 
@@ -2276,11 +2275,10 @@ function checkIfUserExist(spNumber, response) {
 
 /**
  * 
- * @param {*} email The user spNumber to be checked 
- * @param {*} response The server response object
- * @param {*} callback Function to be returned when the email account exists or not
- */
-function checkIfUserEmailExist(email, response, callback) {
+ * @param {*} collectionName 
+ * @param {*} response 
+ */ //working
+function checkIfUserEmailExist(email, response) {
 
     db.collection("users").findOne({
 
@@ -2290,54 +2288,29 @@ function checkIfUserEmailExist(email, response, callback) {
 
         console.log("User Email Checking Result :", result);
 
+
         if (err) {
-
             console.table(err);
-
-            if (response === null) {
-
-                callback(false);
-
-            } else {
-
-                response.status(200).send({ errMsg: 'Server side error occured...' });
-
-            }
+            response.send(err);
         }
 
         else {
 
             if (result == null) {
 
-                if (typeof callback == 'function' && callback != 'undefined') {
-                    callback(false);
-                }
+                response.send({
 
-                else {
-                    response.send({
+                    "exists": false
 
-                        "exists": false
-
-                    }); // login credendtials are invalid 
-                }
-
-
+                }); // login credendtials are invalid 
 
             } else {
 
+                response.send({
 
-                if (typeof callback == 'function' && callback != 'undefined') {
-                    callback(true);
-                }
+                    "exists": true
 
-                else {
-
-                    response.send({
-
-                        "exists": true
-
-                    }); // login credendtials are valid 
-                }
+                }); // login credendtials are valid 
 
             }
 
@@ -2345,9 +2318,6 @@ function checkIfUserEmailExist(email, response, callback) {
 
     });
 }
-
-
-
 
 
 
@@ -2470,6 +2440,7 @@ function checkIfAdminspNumberExist(spNumber, response) {
 
 
 /**
+ * 
  * @param {*} spNumber The admin spNumber
  * @param {*} password The admin passowrd 
  * @param {*} response The response the server will send to the admin 
@@ -2785,46 +2756,6 @@ function deleteSurveyById(id, response) {
 
 /**
  * 
- * @param {*} token 
- * @param {*} exists 
- * @param {*} activated 
- * @param {*} message 
- */
-function removeToken(token, exists, activated,  message, response , reset ) {
-
-    // remove the token from the DB
-    db.collection('tokens').deleteOne({ token: token.trim() }, function (error, result) {
-
-        if (error) {
-
-            console.table(error)
-
-        } else {
-
-            console.table(result);
-
-            response.status(200).send({
-
-                message: message,
-
-                tokenExist: exists,
-
-                accountActivated: activated,
-
-                reset : reset
-
-            });
-
-        }
-
-    });
-
-}
-
-
-
-/**
- * 
  * @param {*} spNumber The Staff SP Number
  * @param {*} token  The token Generated for the activation
  * @param {*} response the Server response object
@@ -2837,7 +2768,7 @@ function activateAccount(email, spNumber, token, response) {
 
     }, function (err, result) {
 
-        console.log("CORRESPONDING ACCOUNT FOUND :::::::> ", result);
+        console.log( "CORRESPONDING ACCOUNT FOUND :::::::> ", result);
 
 
         if (err) {
@@ -2877,38 +2808,23 @@ function activateAccount(email, spNumber, token, response) {
 
             db.collection('tokens').findOne({ token: token.trim() }, function (error, result) {
 
-                //token remover 
-
                 if (error) response.status(500).send({ 'errMsg': "Server error occured, could not activate your account" });
 
-                else if (result != null && result.token != null) {
+                else if (result !=null  && result.token != null) {
 
-                    const oneDay = 24 * 3600 * 1000;
+                    if ((token.trim() === result.token) && (Date.now() > result['expires'])) {
 
-                    const today = new Date();
-
-                    const dateDiff = new Date(today.toISOString()) - new Date(result['expires']);
-
-                    console.log("DATE COMPARISON :::::: ", new Date(result['expires']), today.toISOString())
-
-                    if ((token.trim() === result.token) && (dateDiff > oneDay)) {
-
-                        console.log(Date.now())
+                        console.log(Date.now () )
 
                         console.log(result['expires'])
 
-                        // response.send({ 'message': "The token has expired, please request for another activation link", tokenExist: false });
+                        response.send({ 'message': "The token has expired, please request for another activation link" });
 
-                        //remove the token after the token as expired 
-
-                        removeToken(token.trim(), false, false, "The token has expired and the account is not activated. Please kindly request for another one.", response);
-
-
-                    } else if ((token.trim() === result.token) && (dateDiff <= oneDay)) {
+                    } else if ((token.trim() === result.token) && (Date.now() < result['expires'])) {
 
                         db.collection('users')
 
-                            .updateOne(
+                            .update(
 
                                 { spNumber: spNumber.trim(), email: email.trim() },
 
@@ -2926,11 +2842,23 @@ function activateAccount(email, spNumber, token, response) {
 
                                     } else {
                                         // remove the token from the DB
+                                        db.collection('tokens').remove({ token: token.trim() }, function (error, result) {
 
-                                        removeToken(token.trim(), true, true, "Your account has been successfully activated, please proceed to login.", response);
+                                            if (error) {
+
+                                                console.table(error)
+
+                                            } else {
+
+                                                console.table(result);
+
+                                                reponse.status(200).send({ tokenExist: true, accountActivated: true });
+
+                                            }
+
+                                        });
 
                                         //send the response after the account is activated
-
 
                                     }
 
@@ -2959,372 +2887,13 @@ function activateAccount(email, spNumber, token, response) {
 }
 
 
-
 /**
  * 
- * @param {*} token 
- * @param {*} tokenExpires 
- * @param {*} dateCreated 
+ * @param {*} document Document submitted to the server 
+ * @param {*} response  Server response object 
  */
-function saveGeneratedToken(document, token, dates, dateCreated, response, messageType) {
 
-    return new Promise(function (resolve, reject) {
-
-        //save the token inside a collection 
-
-        db.collection('tokens')
-
-
-            .insertOne(
-
-                { token: token, expires: dates[1], type: messageType || "accountActivation", date: dateCreated, expired: false },
-
-                function (error, result) {
-
-
-                    if (error)
-
-                        response.status(500)
-
-                            .send({
-
-                                'errMsg':
-
-                                    "Could not generate link. System Error"
-                            }
-
-                            );
-
-                    else {
-
-                        // console.log("Token Addedd successfully");
-                        // response.send("Done")
-                        // RedisClient.set(document.usersname, token, 'EX', (24 * 60 * 60));
-
-                        console.log("CALLING YOU FROM  saveGeneratedToken")
-
-                        // console.log ( "DATE[0]" , dates[0] , "---------" , "DATE[1]" , dates[1]);
-
-                        sendMessage(document, dates[0], token, response, messageType);
-
-                        resolve(true);
-
-                        // if (response !== null ) {
-
-                        //     response.send()
-                        // }
-
-                    }
-
-                    //allert the me as each user register on this app.
-                })
-
-    });
-
-}
-
-
-
-/**
- * 
- * @param {*} token The token param 
- * @param {*} response The response object from the rest endpoint 
- */
-function verifyPasswordLink(token, response) {
-    try {
-        db.collection('tokens').findOne({ token: token.trim() }, function (error, result) {
-            if (error) {
-                response.status(500).send({ errMsg: "Server error..." })
-            } else if (result != null) {
-                const oneDay = 24 * 3600 * 1000;
-                const today = new Date();
-                const dateDiff = new Date(today.toISOString()) - new Date(result['expires']);
-                console.log("DATE COMPARISON :::::: ", new Date(result['expires']), today.toISOString())
-                console.log(Date.now())
-                console.log(result['expires'])
-                if (dateDiff <= oneDay) {
-                    response.status(200).send({valid : true });
-                } else if ((document.token.trim() === result.token) && (dateDiff > oneDay)) {
-                    // response.status(200).send({ message: 'token expired'});
-                    db.collection('token').deleteOne({token : document.token} , function(error , result) {
-                        if (error) {
-                            console.log(error);
-                            reponse.status(500).send({errorMsg : 'System error... failed to validat the link'});
-                        }else {
-                            response.status(200).send({valid : false });
-                        }
-                    })
-                }
-            }else if (result === null) {
-                console.log("Token does not exist");
-                response.send({ message: "The password reset link is expired or does not exist , please request for another password reset link." })
-            }
-        });
-    } catch (error) {
-        console.log(error);
-        response.status(500).send({errorMsg : "Server Error ... please try again"})
-    }
-   
-}
-
-/**
- * 
- * @param {*} newPassword THe user new password 
- * @param {*} confirmPassword The password to crosscheck the validity of the new password
- * @param {*} spNumber The user spNumber 
- * @param {*} response The server response object 
- */
-function resetUserAccountPassword(document, response) {
-
-    //document should look like this 
-    //email , spNumber , newPassword, confirmPassword
-
-    try {
-
-
-
-        checkIfUserEmailExist(document.email, null, function (exist) {
-
-            if (exist) {
-
-                // console.log(true) ;
-
-                db.collection('tokens').findOne({ token: document.token }, function (error, result) {
-
-                    if (error) {
-                        response.status(500).send({ errMsg: "Server error..." })
-
-                    } else if (result != null) {
-
-                        console.log('ANOTHER');
-
-
-                        const oneDay = 24 * 3600 * 1000;
-
-                        const today = new Date();
-
-                        const dateDiff = new Date(today.toISOString()) - new Date(result['expires']);
-
-                        console.log("DATE COMPARISON :::::: ", new Date(result['expires']), today.toISOString())
-
-
-                        console.log(Date.now())
-
-                        console.log(result['expires'])
-
-                        if (dateDiff <= oneDay) {
-
-
-                            if (document.newPassword === document.confirmPassword) {
-
-
-                                bcrypt.hash(document.newPassword, 12, function (error, encryptedPassword) {
-
-                                    if (error) {
-
-                                        response.status(500).send({ errorMsg: 'Server error occured...' });
-
-                                    } else {
-
-                                        console.log(error);
-
-
-                                        db.collection('users').updateOne({ email: document.email.trim() }, { $set: { password: encryptedPassword } }, function (err, res) {
-
-                                            if (err) {
-
-                                                console.log(error);
-
-                                                response.status(500).send({ errMsg: 'Server side error occured...' });
-
-                                            }
-
-                                            else {
-
-                                                // response.status(200).send({ message: 'account password has been updated successfully. You can proceed to login' });
-
-                                                console.log("Token gotten ", result.token);
-
-                                                removeToken(result.token, true, true, "Password reset was successfull. Please proceed to login", response, true );
-
-
-
-                                            }
-
-                                        })
-                                    }
-
-
-                                });
-
-
-                            } else {
-
-                                response.status(403).send({ errorMsg: "Password Mismatched" });
-
-                            }
-
-                        } else if ((document.token.trim() === result.token) && (dateDiff > oneDay)) {
-                            console.log("YEEESSS");
-                            // response.status(200).send({ message: 'token expired'});
-                            removeToken(result.token, false, false, "The token has expired and the account is not yet activated. Please kindly request for another one.", response, false);
-
-                        }
-                    }
-
-
-                    else if (result === null) {
-
-                        console.log("Token does not exist");
-
-                        response.status(200).send({ message: "The password reset link is expired or does not exist , please request for another password reset link." })
-
-                    }
-
-                });
-
-            } else {
-
-                response.status(404).send({ errMsg: "The email account does not exists." });
-
-            }
-
-        });
-
-
-
-
-    } catch (error) {
-
-        console.log(error);
-
-        response.status(500).send({ errMsg: "Server error occured..." })
-    }
-
-
-
-
-
-}
-
-
-/**
- * 
- * @param {String} email user email account 
- * @param {Object} response The server response object 
- */
-function sendForgotPasswordLink(email, response) {
-
-    checkIfUserEmailExist(email, response, function callback(exist) {
-
-        if (exist) {
-            try {
-
-                generateToken({ email: email }, response, 'resetpassword');
-
-            } catch (error) {
-
-                console.error(error);
-
-                response.status(500).send({ errMsg: 'Server error occured....' });
-
-            }
-        } else {
-            response.status(404).send({ errorMsg: "The email does not exists, kindly provide a registered email address to get the reset password link" });
-        }
-
-    })
-
-}
-
-/**
- * 
- * @param {*} callback 
- * 
- * 
- */
-async function generateToken(document, response, messageType) {
-
-    console.log('Yes two');
-
-
-    try {
-
-        // return new Promise(function (resolve, reject) {
-
-        const dateCreated = Date.now();
-
-        const tokenExpiringDate = new Date(Date.now() + (1000 * 24 * 60 * 60));
-
-        const token = objectHash(document.email + Date.now());
-
-        // if (typeof saveGeneratedToken === 'function') {
-
-
-        saveGeneratedToken(document, token, [tokenExpiringDate.toISOString(), tokenExpiringDate], dateCreated, response, messageType);
-
-        // resolve([tokenExpiringDate, token, dateCreated]);
-
-        // return;
-
-        // }
-
-        // });
-
-    } catch (error) {
-
-        console.log(error);
-
-        response.status(500).send({ errMsg: 'Server error occured.... please try again later' });
-
-        return new Error(error);
-
-    }
-
-}
-
-
-/**
- * 
- * @param {*} email The Email of the user 
- * @param {*} spNumber The Account Sp Number 
- * @param {*} response The response object 
- */
-function sendAnotherActivationLink(email, spNumber, response) {
-
-    try {
-        //check the activation token saved to the token collection 
-        const document = { email: email, spNumber: spNumber };
-
-        // const newToken = objectHash({ email: email, spNumber: spNumber, date: Date.now() * Math.random() * 200 });
-
-        // const tokenExpiringDate = new Date(Date.now() + (1000 * 24 * 60 * 60)) ;
-
-        // saveGeneratedToken(document , newToken, [tokenExpiringDate ,  new Date() , response  );
-
-        // console.log("CALLING YOU FROM  sendAnotherActivationLink");
-
-        generateToken(document, response)
-
-        // sendMessage(document, response);
-
-    } catch (err) {
-        console.log(err);
-        response.status(500).send({ errMsg: err, linkSent: false })
-    }
-
-}
-
-
-
-/**
- * 
- * @param {*} document 
- * @param {*} tokenExpiringDate 
- * @param {*} token 
- * @param {*} response 
- */
-function sendMessage(document, tokenExpiringDate, token, response, messageType) {
+function sendMessage(document, tokenExpiringDate, token, response) {
 
 
     // sendActivationLink({
@@ -3338,49 +2907,36 @@ function sendMessage(document, tokenExpiringDate, token, response, messageType) 
     //         + tokenExpiringDate.toDateString() + ",and then the token expires "
 
     //         + " at " + tokenExpiringDate.toTimeString() +
-    //         ` .Account activation link : https://promotbotweb.herokuapp.com/avtivate?email=${document.email}&email=${document.spNumber}&/?token=${token}`
+    //         ` .Account activation link : https://promotbotweb.com/avtivate?email=${document.email}&email=${document.spNumber}&/?token=${token}`
 
     // })
 
-    // .then(function (success) { 
+        // .then(function (success) { 
 
-    //     console.table(success)
+        //     console.table(success)
 
-    if (messageType === 'resetpassword') {
+            console.log("Generated Link , " , `https://promotbotweb.com/avtivate?email=${document.email}&spNumber=${document.spNumber}&token=${token}`)
+            response.send("ok");
+        //     response.send(
+ 
+        //         {
+        //             message: `
+        //             Your account has been created successfully, 
+        //             please kindly check your email to 
+        //             activate your credentials to 
+        //             be able to create your CV
+        //             `
+        //         }
 
-        console.log("Generated Link , ", `https://promotbotweb.herokuapp.com/resetpassword?email=${document.email}&token=${token}`);
+        //     );
 
-        // response.status(200).send({
-        //     message: `Forgot password link created successfully, kindly check your email to reset your passeord`}
-        // );
+        // })
 
-        response.status(200).send(
-            {
-                linkGenerated: true,
-                message: "A link has been sent to the provided email address, kindly check your inbox to reset your password"
-            }
-        );
-
-    } else {
-
-        console.log("Generated Link , ", `https://promotbotweb.herokuapp.com/activate?email=${document.email}&spNumber=${document.spNumber}&token=${token}`)
-
-        response.status(200).send(
-            {
-                tokenGenrated: true,
-                message: `A mail with an account activation link has been sent to your email, kindly check to complete your registration.`
-            }
-        );
-
-    }
-
-
-    // .catch(function (reason) {
-    //     console.log("failed to send mail");
-    //     console.log(reason);
-    //     // response.send({"errMsg" : reason});
-    // });
-
+        // .catch(function (reason) {
+        //     console.log("failed to send mail");
+        //     console.log(reason);
+        //     // response.send({"errMsg" : reason});
+        // });
 }
 
 
@@ -3451,9 +3007,5 @@ module.exports = {
     deleteAllSurvey,
     deleteSurveyById,
     activateAccount,
-    checkIfUserEmailExist,
-    sendAnotherActivationLink, 
-    resetUserAccountPassword,
-    sendForgotPasswordLink,
-    verifyPasswordLink
+    checkIfUserEmailExist
 }

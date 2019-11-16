@@ -69,7 +69,7 @@ router.delete('/byspNumber/:spNumber', function(req, res, next) {
 });
 
 //working 
-router.get('/all/:offset/:count', function(req, res, next) {
+router.get('/all/:offset/:count', function(req, resetpasswordres, next) {
     handler.getApplicants(res , req.params.offset , req.params.count);
 });
 

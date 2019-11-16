@@ -51,11 +51,8 @@ APPLICATION.use('/', cors() ,indexRouter);
 APPLICATION.use('/users', cors(), usersRouter);
 APPLICATION.use("/admin" , cors(), adminRouter) ;
 APPLICATION.use("/upload" , cors(), uploadRouter) ;
-APPLICATION.use("/applicants" , cors(), applicantsRouter) ;
-APPLICATION.use("/survey" , cors(), surveyRouter) ;
-
-
-
+APPLICATION.use("/applicants" , cors(), applicantsRouter);
+APPLICATION.use("/survey" , cors(), surveyRouter);
 
 
 // catch 404 and forward to error handler
@@ -65,9 +62,14 @@ APPLICATION.use(function(req, res, next) {
 // error handler
 APPLICATION.use(function(err, req, res, next) {
   // set locals, only providing error in development
+
   res.locals.message = err.message;
+
   res.locals.error = APPLICATION.get('env') === 'development' ? err : {};
+
   // render the error page
-  res.status(err.status || 500);
+  res.status(err.status || 500); 
+
   res.render('error');
+
 });module.exports = APPLICATION;
