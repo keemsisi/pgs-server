@@ -6,6 +6,9 @@ var bodyParser = require('body-parser');
 var path = require('path');
 
 
+//the cv is name applicant 
+// to acess the cv send request to the applicant endpoint
+
 var cookieParser = require('cookie-parser');
 
 
@@ -26,11 +29,13 @@ router.use(function(req, res, next) {
 });
 
 //working
-router.post('/register',multer().any() , function(req, res, next) {
+router.post('/submit-cv/:spNumber',multer().any() , function(req, res, next) {
 // router.post('/register', function(req, res, next) {
+    console.log(req.params.spNumber);
     console.log(req.body) ;
-    // res.send("ok");
-    handler.insertAccount(req.body , res);
+    // console.log(JSON.stringifyreq.body.personalInformation.phoneNumbers);
+    handler.insertCv(req.params.spNumber , req.body , res);
+
 });
 
 

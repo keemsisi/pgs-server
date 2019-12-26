@@ -1596,10 +1596,10 @@ function insertNewStaff(document, response, callback) {
 
                                 //save the token inside a collection 
 
-                                
+
                                 db.collection('tokens')
 
-                    
+
                                     .insertOne(
 
                                         { token: token, expires: tokenExpiringDate.get(), type: "accountActivation" },
@@ -1849,25 +1849,25 @@ function insertAccount(document, res) {
     });
 }
 
-
+// db.collection("fileMappings").deleteOne({ "owner" : spNumber.trim() }).then(((value)=>{
+//     console.log("File mappings of ", spNumber , " was unlinked from the fileMappings collection");
+//     // response.status(200).send("Applicant with _id :"+ applicantId +" deleted successfully!");
+// }),function(reason){
+//     console.log("File mappings of ", spNumber , " failed to unlink from the fileMappings collection" , reason);
+//     // response.status(500).send("Applicant with _id: "+applicantId , "failed to delete");
+// });
 module.exports = function insertCv(document, res) {
-    insertNewStaff(document.loginCred, null, function () {
-        //format {"spNumber" : form values}
-        db.collection("users-curriculum-vitae").insertOne(document, function (err, response) {
-            if (err) res.send(err);
-            else {
-                console.log("Document insert successfully!");
-                // db.collection("fileMappings").deleteOne({ "owner" : spNumber.trim() }).then(((value)=>{
-                //     console.log("File mappings of ", spNumber , " was unlinked from the fileMappings collection");
-                //     // response.status(200).send("Applicant with _id :"+ applicantId +" deleted successfully!");
-                // }),function(reason){
-                //     console.log("File mappings of ", spNumber , " failed to unlink from the fileMappings collection" , reason);
-                //     // response.status(500).send("Applicant with _id: "+applicantId , "failed to delete");
-                // });
-                res.status(200).send({ "response": "Your curriculum vitae was updated added successfully!" });
-            }
-        });
+    // insertNewStaff(document.loginCred, null, function () {
+    //     //format {"spNumber" : form values}
+    db.collection("users-cv").insertOne({ spNumber: document.loginCred.spNumber, user_cv: document }, function (err, response) {
+        if (err) res.send(err);
+        else {
+            console.log("CV insert successfully!");
+            res.status(200).send({ "response": "Your curriculum vitae was updated added successfully!" });
+        }
     });
+    //     });
+    // }
 }
 
 
@@ -2768,7 +2768,7 @@ function activateAccount(email, spNumber, token, response) {
 
     }, function (err, result) {
 
-        console.log( "CORRESPONDING ACCOUNT FOUND :::::::> ", result);
+        console.log("CORRESPONDING ACCOUNT FOUND :::::::> ", result);
 
 
         if (err) {
@@ -2810,11 +2810,11 @@ function activateAccount(email, spNumber, token, response) {
 
                 if (error) response.status(500).send({ 'errMsg': "Server error occured, could not activate your account" });
 
-                else if (result !=null  && result.token != null) {
+                else if (result != null && result.token != null) {
 
                     if ((token.trim() === result.token) && (Date.now() > result['expires'])) {
 
-                        console.log(Date.now () )
+                        console.log(Date.now())
 
                         console.log(result['expires'])
 
@@ -2911,32 +2911,32 @@ function sendMessage(document, tokenExpiringDate, token, response) {
 
     // })
 
-        // .then(function (success) { 
+    // .then(function (success) { 
 
-        //     console.table(success)
+    //     console.table(success)
 
-            console.log("Generated Link , " , `https://promotbotweb.com/avtivate?email=${document.email}&spNumber=${document.spNumber}&token=${token}`)
-            response.send("ok");
-        //     response.send(
- 
-        //         {
-        //             message: `
-        //             Your account has been created successfully, 
-        //             please kindly check your email to 
-        //             activate your credentials to 
-        //             be able to create your CV
-        //             `
-        //         }
+    console.log("Generated Link , ", `https://promotbotweb.com/avtivate?email=${document.email}&spNumber=${document.spNumber}&token=${token}`)
+    response.send("ok");
+    //     response.send(
 
-        //     );
+    //         {
+    //             message: `
+    //             Your account has been created successfully, 
+    //             please kindly check your email to 
+    //             activate your credentials to 
+    //             be able to create your CV
+    //             `
+    //         }
 
-        // })
+    //     );
 
-        // .catch(function (reason) {
-        //     console.log("failed to send mail");
-        //     console.log(reason);
-        //     // response.send({"errMsg" : reason});
-        // });
+    // })
+
+    // .catch(function (reason) {
+    //     console.log("failed to send mail");
+    //     console.log(reason);
+    //     // response.send({"errMsg" : reason});
+    // });
 }
 
 

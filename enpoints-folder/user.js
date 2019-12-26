@@ -45,7 +45,7 @@ router.post('/spNumber/exists', function (req, res, next) {
 });
 
 /* INSERT users listing.*/
-router.post('/add',multer().any(), function (req, res, next) {
+router.post('/create-account',multer().any(), function (req, res, next) {
   var document = req.body;
   console.log(document)
   handler.insertAccount(document, res);

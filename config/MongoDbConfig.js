@@ -17,7 +17,7 @@ var events = new EventEmitter();
 
 var mongodbClient = null; // initital client value
 
-var db, gfs, gfsCommendation, gfsPubblication;
+var db = undefined , gfs, gfsCommendation, gfsPubblication;
 
 
 
@@ -42,49 +42,13 @@ events.on('client-ready', function (mongoDBClientReceived) {
 
     db = mongodbClient.db('promotbot-db'); //get the database to use 
 
-    // db.createCollection("lasisi", function(result){
-
-    //     console.log("Collection created");
-
-    // });
-
-    // gfs = Grid(db, mongo);
-
-
-
-    // gfsCommendation = Grid(db, "commendation");
-
-    // gfsPubblication = Grid(db, "publication");
-
-
-
-    // testInsertDocument({"name": "Adeshina", "age" : 334  , "school" : "Nigeria University"});
-
     console.log('[+] : MongoDb Connected successfully and ready to receive connections');
 
     db.collection('users').findOne({} , function (erro , result) {
         console.log(result);
     })
 
-
- 
-    //create the temporary folder for uploading the files into the tmp/cu
-
-    // execCommandAtTerminal()
-
-
 });
-
-
-
-
-
-
-
-
-
-
-// Use connect method to connect to the server
 
 mongo.connect(url, {
 
@@ -114,5 +78,4 @@ mongo.connect(url, {
 // db.collection('users').findOne({} , function (erro , result) {
 //     console.log(result);
 // })
-
 module.exports= {db};

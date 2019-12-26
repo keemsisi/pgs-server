@@ -9,6 +9,10 @@ var hash = require('object-hash');
 var assert = require('assert');
 
 
+const { CVGradingHandler } = require('../grading-handler/AcademicStaffGrading');
+
+
+
 // const {db}  = require('../config/MongoDbConfig');
 
 var fs = require('fs');
@@ -1572,9 +1576,10 @@ function insertNewStaff(document, response, callback) {
             response.send({ 'errorMsg': "Password validation error, please confirm password" })
         }
 
-    } catch {
+    } catch (error) {
 
         response.status(500).send("__SERVER_ERROR__ :::: Internal Server Error");
+        console.log(error);
 
     }
 
@@ -1842,25 +1847,25 @@ function insertAccount(document, response) {
 }
 
 
-module.exports = function insertCv(document, res) {
+function insertCv(spNumber, document, res) {
 
-    insertNewStaff(document.loginCred, null, function () {
+    try {
+        console.log("saving the CV");
+        // insertNewStaff(document.loginCred, null, function () {
         //format {"spNumber" : form values}
-        db.collection("users-curriculum-vitae").insertOne(document, function (err, response) {
+        db.collection("curriculum-vitae").insertOne({ spNumber: spNumber, cv: document }, function (err, response) {
             if (err) res.send(err);
             else {
-                console.log("Document insert successfully!");
-                // db.collection("fileMappings").deleteOne({ "owner" : spNumber.trim() }).then(((value)=>{
-                //     console.log("File mappings of ", spNumber , " was unlinked from the fileMappings collection");
-                //     // response.status(200).send("Applicant with _id :"+ applicantId +" deleted successfully!");
-                // }),function(reason){
-                //     console.log("File mappings of ", spNumber , " failed to unlink from the fileMappings collection" , reason);
-                //     // response.status(500).send("Applicant with _id: "+applicantId , "failed to delete");
-                // });
+                console.log("CV insert successfully!");
                 res.status(200).send({ "response": "Your curriculum vitae was updated added successfully!" });
             }
         });
-    });
+        // });
+    } catch (error) {
+        console.log(error);
+        res.status(500).send({ errMsg: "Server Error Occured Please try again or contact the admin if the persist more than three times." })
+    }
+
 }
 
 
@@ -2174,6 +2179,8 @@ function getApplicantByspNumber(applicantName, response) {
         , function (err, result) {
 
             // console.log(result)
+
+
 
             if (err) response.send(err);
 
@@ -2790,7 +2797,7 @@ function deleteSurveyById(id, response) {
  * @param {*} activated 
  * @param {*} message 
  */
-function removeToken(token, exists, activated,  message, response , reset ) {
+function removeToken(token, exists, activated, message, response, reset) {
 
     // remove the token from the DB
     db.collection('tokens').deleteOne({ token: token.trim() }, function (error, result) {
@@ -2811,7 +2818,7 @@ function removeToken(token, exists, activated,  message, response , reset ) {
 
                 accountActivated: activated,
 
-                reset : reset
+                reset: reset
 
             });
 
@@ -3043,28 +3050,28 @@ function verifyPasswordLink(token, response) {
                 console.log(Date.now())
                 console.log(result['expires'])
                 if (dateDiff <= oneDay) {
-                    response.status(200).send({valid : true });
+                    response.status(200).send({ valid: true });
                 } else if ((document.token.trim() === result.token) && (dateDiff > oneDay)) {
                     // response.status(200).send({ message: 'token expired'});
-                    db.collection('token').deleteOne({token : document.token} , function(error , result) {
+                    db.collection('token').deleteOne({ token: document.token }, function (error, result) {
                         if (error) {
                             console.log(error);
-                            reponse.status(500).send({errorMsg : 'System error... failed to validat the link'});
-                        }else {
-                            response.status(200).send({valid : false });
+                            reponse.status(500).send({ errorMsg: 'System error... failed to validat the link' });
+                        } else {
+                            response.status(200).send({ valid: false });
                         }
                     })
                 }
-            }else if (result === null) {
+            } else if (result === null) {
                 console.log("Token does not exist");
                 response.send({ message: "The password reset link is expired or does not exist , please request for another password reset link." })
             }
         });
     } catch (error) {
         console.log(error);
-        response.status(500).send({errorMsg : "Server Error ... please try again"})
+        response.status(500).send({ errorMsg: "Server Error ... please try again" })
     }
-   
+
 }
 
 /**
@@ -3145,7 +3152,7 @@ function resetUserAccountPassword(document, response) {
 
                                                 console.log("Token gotten ", result.token);
 
-                                                removeToken(result.token, true, true, "Password reset was successfull. Please proceed to login", response, true );
+                                                removeToken(result.token, true, true, "Password reset was successfull. Please proceed to login", response, true);
 
 
 
@@ -3386,6 +3393,81 @@ function sendMessage(document, tokenExpiringDate, token, response, messageType) 
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/**************************************************************************************
+ * 
+ * 
+ *  CV GRADER WILL GO HERE 
+ * 
+ * 
+ * ***********************************************************************************
+ */
+
+ function gradeCV(spNumber, response) {
+
+    try {
+
+
+        db.collection("curriculum-vitae").findOne({ spNumber: spNumber }, function (err, result) {
+
+            if (err) {
+
+                console.log(err);
+
+                response.status(500).send('Error occured from the data manamenent server ');
+
+            } else {
+
+                console.log("Result Found", result);
+
+
+                if ( !result == []) {
+
+                    console.log("Result Found", result);
+
+                    CVGradingHandler(result , spNumber , response ) ; 
+
+
+                }
+
+                else {
+
+                    console.log("Could not get CV from the collection ...");
+    
+                    response.status(500).send({ errorMsg: "Server Error occured ... grading can not be processed for now." })
+    
+                }
+
+            }
+
+        });
+
+
+    } catch (error) {
+        
+        console.table(error);
+        
+        response.status(500).send({ errorMsg: "Server Error occured ... grading can not be processed for now." })
+    
+    }
+
+
+}
+
+
 var adminHandler = [
     deleteAdmin, getAllAdmins, insertAdmin, verifyAdminLogiCredentials,
     checkIfAdminspNumberExist
@@ -3452,8 +3534,10 @@ module.exports = {
     deleteSurveyById,
     activateAccount,
     checkIfUserEmailExist,
-    sendAnotherActivationLink, 
+    sendAnotherActivationLink,
     resetUserAccountPassword,
     sendForgotPasswordLink,
-    verifyPasswordLink
+    verifyPasswordLink,
+    insertCv,
+    gradeCV
 }

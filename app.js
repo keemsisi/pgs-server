@@ -1,10 +1,11 @@
-var createError = require('http-errors');
+// var createError = require('http-errors');
 var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 var indexRouter = require('./enpoints-folder/index');
 var usersRouter = require('./enpoints-folder/user');
+var grader = require('./enpoints-folder/grader');
 var adminRouter = require('./enpoints-folder/admin') ;
 var uploadRouter = require('./enpoints-folder/uploads') ;
 var surveyRouter = require('./enpoints-folder/survey') ;
@@ -53,11 +54,12 @@ APPLICATION.use("/admin" , cors(), adminRouter) ;
 APPLICATION.use("/upload" , cors(), uploadRouter) ;
 APPLICATION.use("/applicants" , cors(), applicantsRouter);
 APPLICATION.use("/survey" , cors(), surveyRouter);
+APPLICATION.use("/grader" , cors(), grader);
 
 
 // catch 404 and forward to error handler
 APPLICATION.use(function(req, res, next) {
-  next(createError(404));
+  // next(createError(404));
 });
 // error handler
 APPLICATION.use(function(err, req, res, next) {
