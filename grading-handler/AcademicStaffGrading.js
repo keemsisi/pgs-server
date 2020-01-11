@@ -835,10 +835,5 @@ let CVGradingHandler = function (masterFormGrouping, eaphni, spNumber, response)
 
 
 module.exports = {
-
     CVGradingHandler,
-
-
 }
-
-
