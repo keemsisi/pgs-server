@@ -11,6 +11,7 @@ var uploadRouter = require('./enpoints-folder/uploads') ;
 var surveyRouter = require('./enpoints-folder/survey') ;
 var applicantsRouter = require('./enpoints-folder/applicants') ;
 var cors = require('cors');
+// var conpression = require('compre');
 
 var WHITE_LIST_SERVER = [
   'https://promotbotweb.herokuapp.com',

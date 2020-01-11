@@ -13,7 +13,10 @@ var cookieParser = require('cookie-parser');
 
 
 router.use(express.json({extended : true}));
-router.use(bodyParser.urlencoded({ extended: true , limit : 1000000000000000}));
+router.use(bodyParser.json({ extended: true , limit : 1000000000000000000000000}));
+router.use(bodyParser.urlencoded({ extended: true , limit : 1000000000000000000000000000}));
+router.use(bodyParser.raw({ extended: true , limit : 10000000000000000000000000}));
+router.use(bodyParser.text({ extended: true , limit : 10000000000000000000000000}));
 router.use(cookieParser());
 
 /**
@@ -32,8 +35,8 @@ router.use(function(req, res, next) {
 router.post('/submit-cv/:spNumber',multer().any() , function(req, res, next) {
 // router.post('/register', function(req, res, next) {
     console.log(req.params.spNumber);
-    console.log(req.body) ;
-    // console.log(JSON.stringifyreq.body.personalInformation.phoneNumbers);
+    // console.log(req.body) ;
+    // console.log(JSON.stringify(req.body.masterFormGroupings.publications));
     handler.insertCv(req.params.spNumber , req.body , res);
 
 });

@@ -210,8 +210,6 @@ export let CVGradingHandler = function (params) {
             });
 
 
-
-
         CVGradingHandler.prototype.BookGrader = function (book) {
             return ScoreTable(pub);
         }
@@ -255,7 +253,7 @@ export let CVGradingHandler = function (params) {
                         return ScoreTable(pub);
                     }
                 },
-                set: function () { },
+                set: function () {},
                 enumerable: !0,
                 configurable: true,
             });

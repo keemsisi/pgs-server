@@ -17,4 +17,9 @@ router.get('/load/:spNumber', function(req, res, next) {
 router.delete('/clear/:spNumber/', function(req, res, next) {
       handler.deleteApplicantByFullName(req.params.name, res); 
 }); 
+
+router.delete('/purge-all-cv', function(req, res, next) {
+      handler.dropCV(res); 
+}); 
+
 module.exports = router;
