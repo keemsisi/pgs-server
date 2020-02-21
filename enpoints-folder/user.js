@@ -12,7 +12,7 @@ var multer = require('multer');
 * This must be there..
 * The reponse will be sent with these headers
 */
-router.use(express.static(path.join(__dirname, 'public/users'))); // the pgs-app home 
+// router.use(express.static(path.join(__dirname, 'public/users'))); // the pgs-app home 
 
 router.use(function (req, res, next) {
   res.header("Access-Control-Allow-Origin", "*");
@@ -102,7 +102,7 @@ router.post('/resetpassword', multer().any() , function (req, res, next) {
 
 
 // count the users
-router.post('/activate', function (req, res, next) {
+router.post('/#/activate', function (req, res, next) {
 
   // console.log("This is the token gotten :::: ",req.query['token'])
 
@@ -120,7 +120,7 @@ router.post('/activate', function (req, res, next) {
 
 
 
-router.post('/activate/link', function (req, res, next) {
+router.post('/#/activate/link', function (req, res, next) {
 
   // console.log("This is the token gotten :::: ",req.query['token'])
 
@@ -137,10 +137,10 @@ router.post('/activate/link', function (req, res, next) {
 
 
 
-// count the users 
-router.delete('/all-users', function (req, res, next) {
-  handler.dropUsers(res);
-});
+// // count the users 
+// router.delete('/all-users', function (req, res, next) {
+//   handler.dropUsers(res);
+// });
 
 
 
@@ -150,36 +150,44 @@ router.delete('/all-users', function (req, res, next) {
 //       console.log(req.body) ;
 //       handler.insertAccount(req.body.loginCred.spNumber ,req.body , res);
 // });
-//   //working 
-// router.get('/byId/:id', function(req, res, next) {
-//       handler.getApplicantById(req.params.id , res);
-// });
-//   //working 
-// router.get('/byname/:name', function(req, res, next) {
-//       handler.getApplicantByName(req.params.name , res);
-// });
-//   //working 
-// router.delete('/byname/:name', function(req, res, next) {
-//       handler.deleteApplicantByFullName(req.params.name, res); 
-// });
-//   //working 
-// router.delete('/byId/:id', function(req, res, next) {
-//     handler.deleteApplicantById(req.params.id , res);
-// });
+
+
+  //working 
+router.get('/byId/:id', function(req, res, next) {
+      handler.getApplicantById(req.params.id , res);
+});
+
+
+//working 
+router.get('/byname/:name', function(req, res, next) {
+      handler.getApplicantByName(req.params.name , res);
+});
+
+  //working 
+router.delete('/byname/:name', function(req, res, next) {
+      handler.deleteApplicantByFullName(req.params.name, res); 
+});
+
+//working 
+router.delete('/byId/:id', function(req, res, next) {
+    handler.deleteApplicantById(req.params.id , res);
+});
+
+
 //   //working 
 // router.get('/all/:offset/:count', function(req, res, next) {
 //     handler.getAllApplicant(res , req.params.offset , req.params.count);
 // });
 
-// // get user account information by id
-// router.get('/:id', function(req, res, next) {
-//   handler.getUserById(req.params.id,res);
-// })
+// get user account information by id
+router.get('/:id', function(req, res, next) {
+  handler.getUserById(req.params.id,res);
+})
 
-// // get user account information by id
-// router.get('/:spNumber', function(req, res, next) {
-//   handler.getUserByName(req.params.spNumber,res);
-// });
+// get user account information by id
+router.get('/:spNumber', function(req, res, next) {
+  handler.getUserByName(req.params.spNumber,res);
+});
 
 /**********Export to the external Modules */
 
@@ -189,7 +197,10 @@ router.get('/verify-forgot-password-link/:token' , function (req, res, next) {
 
 });
 
+
+/**get all the users in the database  */
 router.get('/u/:start/:end', function (req, res, next) {
+  console.log("request was recieved at " , Date.now() )
   handler.getUsers(req.params.start, req.params.end, res);
 });
 

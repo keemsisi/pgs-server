@@ -1618,7 +1618,7 @@ function getUsers(start, end, response) {
 
     db.collection("users")
 
-        .find({})
+        .find({}, { projection: { "password": 0 } })
 
         .skip(parseInt(start))
 
@@ -2271,18 +2271,16 @@ function getApplicantById(applicantId, response) {
  * 
  * @param {Object} document The applicant name to search for in the applicants collection
  */ // working 
-function getApplicantByspNumber(applicantName, response) {
+function getApplicantByspNumber(spNumber, response) {
 
-    db.collection("applicants").findOne({ "loginCred.spNumber": applicantName.trim() },
+    db.collection("CV").findOne({ "spNumber": spNumber.trim() },
 
-        { projection: { _id: 0, "loginCred.passowrd": 0 } }
+        { projection: { _id: 0, "password": 0 } }
 
         , function (err, result) {
 
-            // console.log(result)
-
-
-
+            console.log(result)
+            
             if (err) response.send(err);
 
             else response.send(result);
@@ -2762,7 +2760,7 @@ function deleteAdmin(username, response) {
 function getAllAdmins(response) {
     // db.collection("admins").find({}, {projection : {'password': 1 }}).toArray(function(err, result) {
 
-    db.collection("admins").find({}).toArray(function (err, result) {
+    db.collection("admins").find({} , { projection: { "password": 0 } }).toArray(function (err, result) {
 
         if (err) {
 
@@ -3503,7 +3501,7 @@ function sendMessage(document, tokenExpiringDate, token, response, messageType) 
 
     if (messageType === 'resetpassword') {
 
-        console.log("Generated Link , ", `https://promotbotweb.herokuapp.com/resetpassword?email=${document.email}&token=${token}`);
+        console.log("Generated Link , ", `https://promotbotweb.herokuapp.com/#/resetpassword?email=${document.email}&token=${token}`);
 
         // response.status(200).send({
         //     message: `Forgot password link created successfully, kindly check your email to reset your passeord`}
@@ -3518,7 +3516,7 @@ function sendMessage(document, tokenExpiringDate, token, response, messageType) 
 
     } else {
 
-        console.log("Generated Link , ", `https://promotbotweb.herokuapp.com/activate?email=${document.email}&spNumber=${document.spNumber}&token=${token}`)
+        console.log("Generated Link , ", `https://promotbotweb.herokuapp.com/#/activate?email=${document.email}&spNumber=${document.spNumber}&token=${token}`)
 
         response.status(200).send(
             {
@@ -3595,7 +3593,7 @@ function gradeCV(spNumber, response) {
 
                     // console.log(eaphni);
 
-                    CVGradingHandler(masterFormGroupings, eaphni, spNumber, response);
+                    CVGradingHandler(masterFormGroupings, eaphni, spNumber, response );
 
 
                 }

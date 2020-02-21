@@ -8,7 +8,6 @@ var hash = require('object-hash');
 
 var assert = require('assert');
 
-
 const { CVGradingHandler } = require('../grading-handler/AcademicStaffGrading');
 
 
@@ -31,24 +30,15 @@ const { RedisCleint } = require('../config/RedisConfig');
 
 const { sendActivationLink } = require('./server-mailer');
 
-
-
-
-
-
 var fileCollections = [
     'prizes', 'honours', 'international-recognitions', 'national-recognitions',
-
     'educational-certificates', 'national-and-professional-qaulifications',
-
     'special-assignments', 'publications', 'commendations', 'extra-curricula-activities', 'awards'
 ];
 
 
 /**
-
 * Execute the commnd in the linux terminal 
-
 */
 
 // function execCommandAtTerminal() {
@@ -1926,20 +1916,26 @@ function insertCv(spNumber, document, res) {
 
                 console.log("RESULT ::::: OLD ::::: ", result)
 
-                db.collection("CV").updateOne({ spNumber: spNumber.trim() }, { $set: { spNumber : spNumber.trim() , cv: JSON.stringify(document) } }, { multi: true }, function (err, result) {
+                // document.masterFormGroupings.publications.books.map( book => book['publisher'] = "" )
+                // document.eaphni.academicQualifications.map(book => book['degree'] = "none");
+
+                // console.log(document.eaphni.academicQualifications)
 
 
-                        if (err) res.send(err);
+                db.collection("CV").updateOne({ spNumber: spNumber.trim() }, { $set: { spNumber: spNumber.trim(), cv: JSON.stringify(document) } }, { multi: true }, function (err, result) {
 
-                        else {
 
-                            console.log("curriculum vitae update insert was successful");
+                    if (err) res.send(err);
 
-                            res.status(200).send({ "response": "Your curriculum vitae was updated added successfully!" });
+                    else {
 
-                        }
+                        console.log("curriculum vitae update insert was successful");
 
-                    });
+                        res.status(200).send({ "response": "Your curriculum vitae was updated added successfully!" });
+
+                    }
+
+                });
 
             } else if (result == null) {
 
@@ -2586,11 +2582,11 @@ function checkIfAdminusernameExist(spNumber, response) {
  * @param {*} password The admin passowrd 
  * @param {*} response The response the server will send to the admin 
  */
-function verifyAdminLogiCredentials(spNumber, password, response) {
+function verifyAdminLogiCredentials(username, password, response) {
 
     db.collection("admins").findOne({
 
-        "username": spNumber.trim(),
+        "username": username.trim(),
 
         "password": password.trim()
 
@@ -2610,16 +2606,48 @@ function verifyAdminLogiCredentials(spNumber, password, response) {
 
                 }); // login credendtials are invalid 
 
+            } else if (result.loggedIn) {
+                response.status(401).send({ message: "The Admin is already signed in... access denied." });
             } else {
 
-                response.send({
+                db.collection('admin').updateOne({ username: username }, { $set: { loggedIn: true } }, function (error, result) {
 
-                    "valid": true
+                    if (err) response.status(500).send(err);
 
-                }); // login credendtials are valid 
+                    else {
+                        response.status(200).send(
+                            {
+                                message: username + "signin was succesful",
 
-            }
+                                "valid": true
+                            }
+                        );
+                    }
 
+                });
+            } // EMD ELSE 
+        }
+    });
+}
+
+
+/**
+ * 
+ * @param {String} username The username of the admin 
+ * @param {Response} response Response object 
+ */
+function logoutAdmin(username, response) {
+
+    db.collection('admin').updateOne({ username: username }, { $set: { loggedIn: false } }, function (err, result) {
+
+        if (err) response.status(500).send(err);
+
+        else {
+            response.status(200).send(
+                {
+                    message: username + "was signed out succesfully"
+                }
+            );
         }
 
     });
@@ -2671,37 +2699,46 @@ function deleteAdmin(username, response) {
 
             } else {
 
-                db.collection("admins").findOne({
-                    username : username.trim() , loggedIn: true
-                } , function(error , result){
-                    if
-                });
+                // db.collection("admins").findOne({
+                //     username : username.trim()
+                // } , function(error , result){
+                //     if(error) {
+                //         response.status(500).send({message : "Server error occured while checking the data management server"});
 
-                db.collection("admins").deleteOne({
+                //     }else  {
+                //         response.status(500).send({message : ""})
+                //     }
+                // });
+                if (!result.loggedIn) {
+                    db.collection("admins").deleteOne({
 
-                    "username": username.trim() 
+                        "username": username.trim()
 
-                }).then(((value) => {
+                    }).then(((value) => {
 
-                    console.log("Admin with  " + username, "was deleted successfully " + new Date());
+                        console.log("Admin with  " + username, "was deleted successfully " + new Date());
 
-                    response.status(200).send({
+                        response.status(200).send({
 
-                        'message': "Admin with username " + username + " deleted successfully!"
+                            'message': "Admin with username " + username + " deleted successfully!"
+
+                        });
+
+                    }), function (reason) {
+
+                        console.log("Admin with username: " + username, "failed to delete" + new Date());
+
+                        response.status(500).send({
+
+                            'message': "Admin with username " + username + " failed delete"
+
+                        });
 
                     });
+                } else {
+                    response.status(401).send({ message: "Not allowed, the admin is already signed in!" });
+                }
 
-                }), function (reason) {
-
-                    console.log("Admin with username: " + username, "failed to delete" + new Date());
-
-                    response.status(500).send({
-
-                        'message': "Admin with username " + username + " failed delete"
-
-                    });
-
-                });
 
             }
 
@@ -2759,7 +2796,7 @@ function getAllAdmins(response) {
  * @param {*} response 
  */
 function insertAdmin(document, response) {
-
+    document['loggedIn'] = false;
     db.collection("admins").insertOne(document, function (err, result) {
 
         console.log("User Checking Result :", document);
@@ -3553,7 +3590,12 @@ function gradeCV(spNumber, response) {
 
                     // response.send("ok");
 
-                    CVGradingHandler(JSON.parse(result.cv).masterFormGroupings.publications, spNumber, response);
+                    const masterFormGroupings = JSON.parse(result.cv).masterFormGroupings;
+                    const eaphni = JSON.parse(result.cv).eaphni;
+
+                    // console.log(eaphni);
+
+                    CVGradingHandler(masterFormGroupings, eaphni, spNumber, response);
 
 
                 }
@@ -3656,5 +3698,6 @@ module.exports = {
     insertCv,
     gradeCV,
     dropCV,
-    checkIfAdminusernameExist
+    checkIfAdminusernameExist,
+    logoutAdmin
 }

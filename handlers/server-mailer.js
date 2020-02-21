@@ -112,7 +112,7 @@ async function sendActivationLink(mailObject , callback ) {
 //         + tokenExpiringDate.toDateString()
 
 //         + " at " + tokenExpiringDate.toTimeString() +
-//          " .Account activation link : http://promotbotweb.com/account/username/activate/?token=" + token
+//          " .Account activation link : http://promotbotweb.com/account/username/#/activate/?token=" + token
 
 // }).then(function (success) {
 //     console.table(success);

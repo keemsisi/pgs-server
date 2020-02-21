@@ -3437,7 +3437,7 @@ function sendMessage(document, tokenExpiringDate, token, response, messageType) 
 
     if (messageType === 'resetpassword') {
 
-        console.log("Generated Link , ", `https://promotbotweb.herokuapp.com/resetpassword?email=${document.email}&token=${token}`);
+        console.log("Generated Link , ", `https://promotbotweb.herokuapp.com/#/resetpassword?email=${document.email}&token=${token}`);
 
         // response.status(200).send({
         //     message: `Forgot password link created successfully, kindly check your email to reset your passeord`}
@@ -3452,7 +3452,7 @@ function sendMessage(document, tokenExpiringDate, token, response, messageType) 
 
     } else {
 
-        console.log("Generated Link , ", `https://promotbotweb.herokuapp.com/activate?email=${document.email}&spNumber=${document.spNumber}&token=${token}`)
+        console.log("Generated Link , ", `https://promotbotweb.herokuapp.com/#/activate?email=${document.email}&spNumber=${document.spNumber}&token=${token}`)
 
         response.status(200).send(
             {

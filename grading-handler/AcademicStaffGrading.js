@@ -526,7 +526,7 @@ function ScoreTable(pub) {
  * pub : This is the publications the user submitted to the database found under the masterFormGrouping.publications.cv
  * The publications can be gotten by supplying the 'publications' index to the get all the publications 
  */
-let CVGradingHandler = function (masterFormGrouping, eaphni, spNumber, response) {
+let CVGradingHandler = function (masterFormGrouping, eaphni, spNumber, response ) {
 
     console.log("Grading Mode Activated here ... ");
 
@@ -825,7 +825,7 @@ let CVGradingHandler = function (masterFormGrouping, eaphni, spNumber, response)
     } catch (error) {
 
         console.log("ERROR_OCCURRED  ::: " + error);
-
+        
         response.status(500).send({ errorMsg: "Server Error occurred from the grading server" });
 
     }

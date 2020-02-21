@@ -53,7 +53,7 @@ router.get('/byname/:name', function(req, res, next) {
     handler.getApplicantByName(req.params.name , res);
 });
 
-// get user account information by id
+// get user account information by spNumber
 router.get('/byspNumber/:spNumber', function(req, res, next) {
     console.log(req.params.spNumber);
     handler.getApplicantByspNumber(req.params.spNumber,res);
@@ -94,7 +94,7 @@ router.get('/all/:offset/:count', function(req, res, next) {
 
 //working 
 router.delete("/all-applicants", function(req, res, next) {
-    console.log('ALL USERS ARE ABOUT TO BE DELETED WITH CONNECTED COLLECTIONS');
+    console.log('ALL USERS ARE ABOUT TO BE DELETED WITH GIVEN COLLECTIONS');
     handler.dropApplicantCollection(res);
 });
 
