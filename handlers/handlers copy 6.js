@@ -3525,7 +3525,7 @@ function sendActivationLink(document, tokenExpiringDate, token, response) {
             + "Sent at "
             + tokenExpiringDate.toDateString() + ",and then the token expires "
             + " at " + tokenExpiringDate.toTimeString() +
-            ` .Account activation link >>>>> https://promotbotweb.herokuapp.com/#/activate?email=${document.email}&spNumber=${document.spNumber}&/?token=${token}`,
+            ` .Account activation link >>>>> https://promotbotweb.herokuapp.com/#/activate?email=${document.email}&email=${document.spNumber}&/?token=${token}`,
         subject : ' ✔ Finalize your Registration ::: Promotbot Account Activation link'
     }).then(function (success) {
         console.table(success)

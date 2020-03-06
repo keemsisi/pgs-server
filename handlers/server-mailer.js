@@ -13,11 +13,11 @@ const options = {
       api_key: 'SENDGRID_PASSWORD'
     }
   }
-var client = nodemailer.createTransport(sgTransport(options));
+// var client = nodemailer.createTransport(sgTransport(options));
 
 
-const username = process.env.ACCOUNT_USERNAME;
-const password = process.env.ACCOUNT_PASSWORD;
+// const username = process.env.ACCOUNT_USERNAME;
+// const password = process.env.ACCOUNT_PASSWORD;
 
 
 
@@ -28,7 +28,7 @@ const password = process.env.ACCOUNT_PASSWORD;
 
  */
 
-async function sendActivationLink(mailObject , callback ) {
+async function mailer(mailObject) {
 
     // Create a SMTP transporter object
     let transporter = nodemailer.createTransport({
@@ -41,21 +41,21 @@ async function sendActivationLink(mailObject , callback ) {
     });
 
     // Message object
-    console.log("Starting to send message...." , mailObject[0])
+    console.log("Starting to send message...." , mailObject.email[0])
 
     let message = {
 
         from: 'FUNAAB PROMOTBOT <funaaabpromotbot@unaab.edu.ng>',
 
         // Comma separated list of recipients
-        to: ` User Email ${mailObject.email[0]},`,
-        bcc: `Server Administrator ${mailObject.email[1]}`,
+        to: `${mailObject.email[0]},`,
+        bcc: `${mailObject.email[1]}`,
 
         // Subject of the message
-        subject: ' ✔ Finalize your Registration ::: Promotbot Account Activation link',
+        subject: mailObject['subject'],
 
         // plaintext body
-        text: mailObject.message,
+        text: mailObject['message'],
 
         // HTML body
         // html:
@@ -98,29 +98,4 @@ async function sendActivationLink(mailObject , callback ) {
     console.log('Message sent successfully as %s', info.messageId);
 
 }
-
-// const objectHash = require('object-hash')
-// const tokenExpiringDate = new Date(Date.now() + (1000 * 24 * 60 * 60));
-// const token = objectHash({} + Date.now());
-//working
-// sendActivationLink({
-
-//     email: "keemsisi@gmail.com",
-
-//     message: "Your regiteration was successful , please click on the link to verify your account and the link expires "
-
-//         + tokenExpiringDate.toDateString()
-
-//         + " at " + tokenExpiringDate.toTimeString() +
-//          " .Account activation link : http://promotbotweb.com/account/username/#/activate/?token=" + token
-
-// }).then(function (success) {
-//     console.table(success);
-    
-// })
-// .catch(function(reason) {
-//     console.table(reason);
-//     // response.send({"errMsg" : reason});
-// });
-
-module.exports = {sendActivationLink}
+module.exports = {mailer}

@@ -67,7 +67,6 @@ router.get('/count', function (req, res, next) {
 });
 
 
-// count the users 
 router.get('/resend-activation-link', function (req, res, next) {
   handler.sendAnotherActivationLink(email, spNumber, res);
 });
@@ -101,7 +100,6 @@ router.post('/resetpassword', multer().any() , function (req, res, next) {
 
 
 
-// count the users
 router.post('/#/activate', function (req, res, next) {
 
   // console.log("This is the token gotten :::: ",req.query['token'])
@@ -120,9 +118,8 @@ router.post('/#/activate', function (req, res, next) {
 
 
 
-router.post('/#/activate/link', function (req, res, next) {
+router.post('/activate/link', function (req, res, next) {
 
-  // console.log("This is the token gotten :::: ",req.query['token'])
 
   let email = req.query['email'];
 
@@ -130,7 +127,9 @@ router.post('/#/activate/link', function (req, res, next) {
 
   console.log(req.query);
 
-  handler.sendAnotherActivationLink(email, spNumber, res);
+  // handler.sendAnotherActivationLink(email, spNumber, res);
+  handler.generateAccountActivationToken( { email : email , spNumber : spNumber } , res );
+  
 
 });
 
