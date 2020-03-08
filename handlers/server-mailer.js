@@ -34,8 +34,8 @@ async function mailer(mailObject) {
     let transporter = nodemailer.createTransport({
         service: 'SendGrid',
         auth: {
-            user: 'integralcodex',
-            pass: 'GIFTED11@int'
+            user: 'cedarbids',
+            pass: 'integratedcodesgifted11'
         }
 
     });

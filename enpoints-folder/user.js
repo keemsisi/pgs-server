@@ -121,7 +121,8 @@ router.post('/#/activate', function (req, res, next) {
 router.post('/activate/link', function (req, res, next) {
 
 
-  let email = req.query['email'];
+  try {
+    let email = req.query['email'];
 
   let spNumber = req.query['spNumber'];
 
@@ -129,6 +130,12 @@ router.post('/activate/link', function (req, res, next) {
 
   // handler.sendAnotherActivationLink(email, spNumber, res);
   handler.generateAccountActivationToken( { email : email , spNumber : spNumber } , res );
+
+  } catch (error) {
+    console.log(error);
+    res.status(500).send(error)
+  }
+  
   
 
 });

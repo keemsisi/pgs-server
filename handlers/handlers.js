@@ -3522,23 +3522,21 @@ function sendActivationLink(document, tokenExpiringDate, token, response) {
     mailer({
         email: [document.email, 'keemsisi@gmail.com'],
         message: "Your regiteration was successful. Please click on the activation link below this mail to activate your account."
-            + "Sent at "
-            + tokenExpiringDate.toDateString() + ",and then the token expires "
-            + " at " + tokenExpiringDate.toTimeString() +
-            ` .Account activation link >>>>> https://promotbotweb.herokuapp.com/#/activate?email=${document.email}&spNumber=${document.spNumber}&/?token=${token}`,
-        subject : ' ✔ Finalize your Registration ::: Promotbot Account Activation link'
+            + "This link will expire by "
+            + tokenExpiringDate.toDateString()+" at " + ` ${tokenExpiringDate.toTimeString() } .Account activation link >>>>> https://promotbotweb.herokuapp.com/#/activate?email=${document.email}&spNumber=${document.spNumber}&/?token=${token}`,
+        subject : ' ✔ Finalize your Registration - Promotbot Account Activation link'
     }).then(function (success) {
         console.table(success)
         response.status(200).send(
             {
                 tokenGenrated: true,
-                message: `A mail with an account activation link has been sent to your email, kindly check to complete your registration.`
+                message: `A mail with an account activation link has been sent to ${document.email}, kindly check to complete your registration.`
             }
-        ).catch(function (reason) {
-            console.log("failed to send mail");
-            console.log(reason);
-            response.send({ "errMsg": "failed to send message to the provided email address... please try again later!" });
-        });
+        )
+    }).catch(function (reason) {
+        console.log("failed to send mail");
+        console.log(reason);
+        response.status(403).send({ "errMsg": "Failed to send mail to the email address... Please try again!" });
     });
 }
 
@@ -3706,5 +3704,6 @@ module.exports = {
     gradeCV,
     dropCV,
     checkIfAdminusernameExist,
-    logoutAdmin
+    logoutAdmin,
+    generateAccountActivationToken
 }
