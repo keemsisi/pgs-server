@@ -21,7 +21,7 @@
     "morgan": "~1.9.0",
     "multer": "^1.4.1",
     "multer-gridfs-storage": "^3.2.3",
-    "nodemailer": "^6.3.0",
+    "nodemailer": "^6.4.16",
     "nodemailer-sendgrid-transport": "^0.2.0",
     "object-hash": "^2.0.0",
     "pdfkit": "^0.10.0",
